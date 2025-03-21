@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns="http://www.thymeleaf.org">
+
+    <head>
+        <meta charset="utf-8">
+        <title>Java Community Site</title>
+        <link rel="stylesheet" href="/styles.css">   
+    </head>
+    <body>
+        <header>
+            <img th:class="logo" src="/logo.png" alt="Logo image">
+
+        </header>
+        
+        
+        <section>
+            <h2>Content for Front Page</h2>
+            
+            
+            <h3>meh meh meh google</h3>
+            <div th:if="${showDetails}">
+                <h3>What you will find in this Java Community Site?</h3>
+                <ul th:each="item: ${features}">
+                    <li th:text="${item}"/>
+                </ul>
+            </div>
+            <a href="https://google.com/"
+            target="_blank"> more details</a>
+            
+            <img th:class="cover" src="/image.jpg" alt="Academy">
+        </section>
+
+        <footer>
+            <pth:class="light-text">Java Community Site Footer</pth:class=>
+        </footer>
+    </body>
+</html>

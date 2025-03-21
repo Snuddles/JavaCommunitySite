@@ -1,0 +1,16 @@
+.logo {
+    width: 80%;
+
+}
+.cover {
+    width: 50%;
+    padding-top: 100px;
+    padding-bottom: 100px;
+}
+.light-text {
+    color: gray;
+}
+section, footer {
+
+    padding-left: 200px;
+}
