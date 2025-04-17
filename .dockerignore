@@ -1,0 +1,38 @@
+# === Build outputs ===
+target/
+build/
+*.jar
+*.war
+
+# === IDEs and Editor junk ===
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# === System files ===
+.DS_Store
+Thumbs.db
+
+# === Git ===
+.git
+.gitignore
+
+# === Logs ===
+*.log
+
+# === Maven local repo (if present) ===
+.mvn/
+mvnw
+mvnw.cmd
+
+# === Environment and Secrets ===
+.env
+*.env
+application-dev.properties
+application-local.properties
+
+# === Docker-related (optional) ===
+Dockerfile
+docker-compose.yml

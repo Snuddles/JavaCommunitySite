@@ -1,0 +1,51 @@
+services:
+  jcs-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jcs-backend
+    ports:
+      - '8080:8080'
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - SPRING_FLYWAY_ENABLED=true
+    depends_on:
+      - postgres
+    networks:
+      - jcs-network
+
+  postgres:
+    image: postgres:16
+    container_name: jcs-postgres
+    restart: always
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - '5432:5432'
+    volumes:
+      - jcs-db:/var/lib/postgresql/data
+    networks:
+      - jcs-network
+
+  adminer:
+    image: adminer:latest
+    container_name: jcs-adminer
+    restart: always
+    ports:
+      - '8081:8080'
+    environment:
+      - ADMINER_DEFAULT_SERVER=postgres
+    depends_on:
+      - postgres
+    networks:
+      - jcs-network
+
+volumes:
+  jcs-db:
+
+networks:
+  jcs-network:
