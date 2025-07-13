@@ -1,8 +1,10 @@
+version: "3.9"
+
 services:
   jcs-backend:
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     container_name: jcs-backend
     ports:
       - '8080:8080'
@@ -13,8 +15,6 @@ services:
       - SPRING_FLYWAY_ENABLED=true
     depends_on:
       - postgres
-    volumes:
-      - .:/app
     networks:
       - jcs-network
 

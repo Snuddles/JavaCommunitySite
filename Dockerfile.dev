@@ -1,0 +1,12 @@
+FROM maven:3.9.9
+WORKDIR /app
+
+# Copy only pom.xml and download dependencies for caching
+COPY pom.xml .
+RUN mvn dependency:go-offline
+
+# Copy source code
+COPY . .
+
+EXPOSE 8080
+CMD ["mvn", "spring-boot:run"]
