@@ -34,7 +34,6 @@ public class PostService {
                 .orElseThrow(() -> new IllegalArgumentException("Community not found"));
 
         Post post = Post.builder()
-                .id(UUID.randomUUID())
                 .user(userPosting)
                 .community(communityPosting)
                 .title(request.getTitle())
@@ -44,6 +43,7 @@ public class PostService {
         postRepo.save(post);
 
         return PostDTO.builder()
+                .id(post.getId())
                 .title(post.getTitle())
                 .content(post.getContent())
                 .createdAt(post.getCreatedAt())

@@ -14,6 +14,4 @@ public class CreatePostRequest {
     private String communityId;
     private String title;
     private String content;
-    private String createdAt;
-    private String updatedAt;
 }

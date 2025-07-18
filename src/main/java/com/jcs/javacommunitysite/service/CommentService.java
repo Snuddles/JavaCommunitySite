@@ -38,7 +38,6 @@ public class CommentService {
                 .orElseThrow(() -> new IllegalArgumentException("Post not found"));
 
         Comment comment = Comment.builder()
-                .id(UUID.randomUUID())
                 .user(commentUser)
                 .post(commentPost)
                 .content(request.getContent())
@@ -47,6 +46,7 @@ public class CommentService {
         commentRepo.save(comment);
 
         return CommentDTO.builder()
+                .id(comment.getId())
                 .content(comment.getContent())
                 .createdAt(comment.getCreatedAt())
                 .updatedAt(comment.getUpdatedAt())
