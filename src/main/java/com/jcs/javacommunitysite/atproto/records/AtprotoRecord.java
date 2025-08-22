@@ -5,9 +5,17 @@ import com.jcs.javacommunitysite.atproto.exceptions.AtprotoInvalidRecord;
 
 import java.util.Optional;
 
-public interface AtprotoRecord {
-    public Optional<String> getDid();  // DID of record. will not exist if record is not in the atmosphere yet
-    public boolean isValid();  // are the contents of this record valid?
-    public JsonObject getAsJson() throws AtprotoInvalidRecord;  // get the lexicon-compliant JSON for this record. must be valid, or will throw
-    public String getRecordCollection();
+public abstract class AtprotoRecord {
+    private String did = null;
+
+    public AtprotoRecord(JsonObject json) { }
+    public AtprotoRecord() { }
+
+    public Optional<String> getDid() {
+        return Optional.of(did);
+    }
+
+    public abstract boolean isValid();  // are the contents of this record valid?
+    public abstract JsonObject getAsJson() throws AtprotoInvalidRecord;  // get the lexicon-compliant JSON for this record. must be valid, or will throw
+    public abstract String getRecordCollection();
 }

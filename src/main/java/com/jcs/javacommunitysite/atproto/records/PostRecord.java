@@ -8,10 +8,13 @@ import lombok.Setter;
 import java.time.Instant;
 import java.util.Optional;
 
-public class PostRecord implements AtprotoRecord {
-    private String did = null;
+public class PostRecord extends AtprotoRecord {
     @Getter @Setter private String text = null;
     @Getter @Setter private Instant createdAt = null;
+
+    public PostRecord(JsonObject json) {
+        super(json);
+    }
 
     public PostRecord(String text) {
         this.text = text;
@@ -21,11 +24,6 @@ public class PostRecord implements AtprotoRecord {
     public PostRecord(String text, Instant createdAt) {
         this.text = text;
         this.createdAt = createdAt;
-    }
-
-    @Override
-    public Optional<String> getDid() {
-        return Optional.of(did);
     }
 
     @Override
