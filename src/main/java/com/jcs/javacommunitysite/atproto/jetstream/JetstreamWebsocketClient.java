@@ -31,9 +31,6 @@ public class JetstreamWebsocketClient extends WebSocketClient {
 
     @Override
     public void onMessage(String s) {
-        System.out.println("MESSAGE RECEIVED:");
-        System.out.println(s);
-
         // Attempt to convert message to JsonObject
         JsonElement messageElement = JsonParser.parseString(s);
         JsonObject responseObject = messageElement.getAsJsonObject();
@@ -45,12 +42,16 @@ public class JetstreamWebsocketClient extends WebSocketClient {
         // Right now we're only looking at commits. It'll prolly be useful to look at the other types later (identity & account)
         if (!kind.equals("commit")) return;
 
+        // TODO remove
+        System.out.println("MESSAGE RECEIVED:");
+        System.out.println(s);
+
         // Get commit and determine commit operation and other record info
         JsonObject commit = responseObject.get("commit").getAsJsonObject();
         String commitOperation = commit.get("operation").getAsString();
         String recordCollection = commit.get("collection").getAsString();
         String recordKey = commit.get("rkey").getAsString();
-        AtUri<AtprotoRecord> atUri = new AtUri<>(userDid, recordCollection, recordKey);
+        AtUri atUri = new AtUri(userDid, recordCollection, recordKey);
 
         // Get handler for this collection. Throw if handler not found
         JetstreamHandler handler = handlers.get(recordCollection);

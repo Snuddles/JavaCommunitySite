@@ -8,7 +8,7 @@ import com.jcs.javacommunitysite.atproto.records.ForumIdentityRecord;
 
 public class JetstreamForumIdentityHandler implements JetstreamHandler {
     @Override
-    public void handleCreated(AtUri<AtprotoRecord> atUri, JsonObject recordJson) {
+    public void handleCreated(AtUri atUri, JsonObject recordJson) {
         ForumIdentityRecord record = new ForumIdentityRecord(atUri, recordJson);
 
         System.out.println("FORUM IDENTITY CREATED:");
@@ -19,12 +19,13 @@ public class JetstreamForumIdentityHandler implements JetstreamHandler {
     }
 
     @Override
-    public void handleUpdated(AtUri<AtprotoRecord> atUri, JsonObject updatedFields) {
-
+    public void handleUpdated(AtUri atUri, JsonObject recordJson) {
+        System.out.println("FORUM IDENTITY UPDATED");
+        ForumIdentityRecord record = new ForumIdentityRecord(atUri, recordJson);
     }
 
     @Override
-    public void handleDeleted(AtUri<AtprotoRecord> atUri) {
+    public void handleDeleted(AtUri atUri) {
 
     }
 }

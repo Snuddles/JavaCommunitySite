@@ -6,9 +6,10 @@ import com.jcs.javacommunitysite.atproto.AtUri;
 
 public class ForumGroupRecord extends AtprotoRecord {
     @Expose private String name;
+
     @Expose private String description;
 
-    public ForumGroupRecord(AtUri<AtprotoRecord> atUri, JsonObject json) {
+    public ForumGroupRecord(AtUri atUri, JsonObject json) {
         super(atUri, json);
         this.name = json.get("name").getAsString();
         this.description = json.has("description") ? json.get("description").getAsString() : null;
@@ -32,5 +33,21 @@ public class ForumGroupRecord extends AtprotoRecord {
     @Override
     public String getRecordCollection() {
         return "dev.fudgeu.experimental.atforumv1.forum.group";
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

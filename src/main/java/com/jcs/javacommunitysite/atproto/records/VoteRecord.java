@@ -7,18 +7,18 @@ import com.jcs.javacommunitysite.atproto.AtUri;
 import java.time.Instant;
 
 public class VoteRecord extends AtprotoRecord {
-    @Expose private AtUri<PostRecord> root;
+    @Expose private AtUri root;
     @Expose private Instant createdAt;
     @Expose private int value;
 
-    public VoteRecord(AtUri<AtprotoRecord> atUri, JsonObject json) {
+    public VoteRecord(AtUri atUri, JsonObject json) {
         super(atUri, json);
-        this.root = new AtUri<>(json.get("root").getAsString());
+        this.root = new AtUri(json.get("root").getAsString());
         this.createdAt = Instant.parse(json.get("createdAt").getAsString());
         this.value = json.get("value").getAsInt();
     }
 
-    public VoteRecord(AtUri<PostRecord> root, int value) {
+    public VoteRecord(AtUri root, int value) {
         this.root = root;
         this.createdAt = Instant.now();
         this.value = value;
@@ -35,5 +35,29 @@ public class VoteRecord extends AtprotoRecord {
     @Override
     public String getRecordCollection() {
         return "dev.fudgeu.experimental.atforumv1.feed.vote";
+    }
+
+    public AtUri getRoot() {
+        return root;
+    }
+
+    public void setRoot(AtUri root) {
+        this.root = root;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public int getValue() {
+        return value;
+    }
+
+    public void setValue(int value) {
+        this.value = value;
     }
 }

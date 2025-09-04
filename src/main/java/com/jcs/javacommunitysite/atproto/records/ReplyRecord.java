@@ -9,16 +9,16 @@ import java.time.Instant;
 public class ReplyRecord extends AtprotoRecord {
     @Expose private String text;
     @Expose private Instant createdAt;
-    @Expose private AtUri<PostRecord> root;
+    @Expose private AtUri root;
 
-    public ReplyRecord(AtUri<AtprotoRecord> atUri, JsonObject json) {
+    public ReplyRecord(AtUri atUri, JsonObject json) {
         super(atUri, json);
         this.text = json.get("text").getAsString();
         this.createdAt = Instant.parse(json.get("createdAt").getAsString());
-        this.root = new AtUri<>(json.get("root").getAsString());
+        this.root = new AtUri(json.get("root").getAsString());
     }
 
-    public ReplyRecord(String text, AtUri<PostRecord> root) {
+    public ReplyRecord(String text, AtUri root) {
         this.text = text;
         this.createdAt = Instant.now();
         this.root = root;
@@ -35,5 +35,29 @@ public class ReplyRecord extends AtprotoRecord {
     @Override
     public String getRecordCollection() {
         return "dev.fudgeu.experimental.atforumv1.feed.reply";
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public AtUri getRoot() {
+        return root;
+    }
+
+    public void setRoot(AtUri root) {
+        this.root = root;
     }
 }

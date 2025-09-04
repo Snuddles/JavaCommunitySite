@@ -12,23 +12,23 @@ public class PostRecord extends AtprotoRecord {
 
     @Expose private String text;
     @Expose private Instant createdAt;
-    @Expose private AtUri<ForumCategoryRecord> category;
+    @Expose private AtUri category;
     @Expose private String forum;  // should be a DID
     @Expose private List<String> tags;
-    @Expose private AtUri<ReplyRecord> solution;
+    @Expose private AtUri solution;
 
-    public PostRecord(AtUri<AtprotoRecord> atUri, JsonObject json) {
+    public PostRecord(AtUri atUri, JsonObject json) {
         super(atUri, json);
         this.text = json.get("text").getAsString();
         this.createdAt = Instant.parse(json.get("createdAt").getAsString());
-        this.category = new AtUri<>(json.get("category").getAsString());
+        this.category = new AtUri(json.get("category").getAsString());
         this.forum = json.get("forum").getAsString();
         this.tags = new ArrayList<>();
         json.get("tags").getAsJsonArray().forEach(tag -> this.tags.add(tag.getAsString()));
-        this.solution = json.has("solution") ? new AtUri<>(json.get("solution").getAsString()) : null;
+        this.solution = json.has("solution") ? new AtUri(json.get("solution").getAsString()) : null;
     }
 
-    public PostRecord(String text, AtUri<ForumCategoryRecord> category, String forum) {
+    public PostRecord(String text, AtUri category, String forum) {
         this.text = text;
         this.createdAt = Instant.now();
         this.category = category;
@@ -36,7 +36,7 @@ public class PostRecord extends AtprotoRecord {
         this.tags = new ArrayList<>();
     }
 
-    public PostRecord(String text, AtUri<ForumCategoryRecord> category, String forum, List<String> tags) {
+    public PostRecord(String text, AtUri category, String forum, List<String> tags) {
         this.text = text;
         this.createdAt = Instant.now();
         this.category = category;
@@ -57,5 +57,53 @@ public class PostRecord extends AtprotoRecord {
     @Override
     public String getRecordCollection() {
         return "dev.fudgeu.experimental.atforumv1.feed.post";
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public AtUri getCategory() {
+        return category;
+    }
+
+    public void setCategory(AtUri category) {
+        this.category = category;
+    }
+
+    public String getForum() {
+        return forum;
+    }
+
+    public void setForum(String forum) {
+        this.forum = forum;
+    }
+
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = tags;
+    }
+
+    public AtUri getSolution() {
+        return solution;
+    }
+
+    public void setSolution(AtUri solution) {
+        this.solution = solution;
     }
 }

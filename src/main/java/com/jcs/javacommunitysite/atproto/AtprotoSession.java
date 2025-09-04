@@ -23,6 +23,12 @@ public class AtprotoSession {
     @Getter private String pdsHost;
     @Getter private String handle;
 
+    private Gson gson = new GsonBuilder()
+            .excludeFieldsWithoutExposeAnnotation()
+            .registerTypeAdapter(Instant.class, new AtprotoDatetimeAdapter())
+            .registerTypeAdapter(Color.class, new AtprotoColorAdapter())
+            .create();
+
     // Factory methods to create sessions
     public static AtprotoSession fromCredentials(String pdsHost, String handle, String password) throws IOException, AtprotoUnauthorized {
         // Create JSON payload
@@ -56,11 +62,6 @@ public class AtprotoSession {
     }
 
     public JsonObject createRecord(AtprotoRecord record) throws AtprotoInvalidRecord, AtprotoUnauthorized, IOException {
-        Gson gson = new GsonBuilder()
-                .excludeFieldsWithoutExposeAnnotation()
-                .registerTypeAdapter(Instant.class, new AtprotoDatetimeAdapter())
-                .registerTypeAdapter(Color.class, new AtprotoColorAdapter())
-                .create();
         JsonObject payload = new JsonObject();
         payload.add("record", gson.toJsonTree(record));
         payload.addProperty("repo", handle);
@@ -76,7 +77,7 @@ public class AtprotoSession {
 
         // Get AtUri and provide it to the record
         String atUri = response.get("uri").getAsString();
-        AtUri<AtprotoRecord> atUriObj = new AtUri<>(atUri);
+        AtUri atUriObj = new AtUri(atUri);
         record.setOwnerDid(atUriObj.getDid());
         record.setRecordKey(atUriObj.getRecordKey());
 
@@ -84,12 +85,7 @@ public class AtprotoSession {
     }
 
     public JsonObject updateRecord(AtprotoRecord record) throws AtprotoInvalidRecord, AtprotoUnauthorized, IOException {
-        if (record.getOwnerDid().isPresent() && !record.getOwnerDid().equals(handle)) throw new AtprotoUnauthorized();
-        Gson gson = new GsonBuilder()
-                .excludeFieldsWithoutExposeAnnotation()
-                .registerTypeAdapter(Instant.class, new AtprotoDatetimeAdapter())
-                .registerTypeAdapter(Color.class, new AtprotoColorAdapter())
-                .create();
+        if (record.getOwnerDid().isPresent() && !record.getOwnerDid().orElseThrow().equals(handle)) throw new AtprotoUnauthorized();
         JsonObject payload = new JsonObject();
         payload.add("record", gson.toJsonTree(record));
         payload.addProperty("repo", handle);
@@ -107,7 +103,7 @@ public class AtprotoSession {
     }
 
     public JsonObject deleteRecord(AtprotoRecord record) throws AtprotoInvalidRecord, AtprotoUnauthorized, IOException {
-        if (record.getOwnerDid().isPresent() && !record.getOwnerDid().equals(handle)) throw new AtprotoUnauthorized();
+        if (record.getOwnerDid().isPresent() && !record.getOwnerDid().orElseThrow().equals(handle)) throw new AtprotoUnauthorized();
         JsonObject payload = new JsonObject();
         payload.addProperty("repo", handle);
         payload.addProperty("collection", record.getRecordCollection());

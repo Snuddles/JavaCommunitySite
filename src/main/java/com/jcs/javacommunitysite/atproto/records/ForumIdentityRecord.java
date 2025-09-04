@@ -12,7 +12,7 @@ public class ForumIdentityRecord extends AtprotoRecord {
     // @Expose private String logo = null;
     @Expose private Color accent = null;
 
-    public ForumIdentityRecord(AtUri<AtprotoRecord> atUri, JsonObject json) {
+    public ForumIdentityRecord(AtUri atUri, JsonObject json) {
         super(atUri, json);
         this.name = json.get("name").getAsString();
         this.description = json.has("description") ? json.get("description").getAsString() : null;

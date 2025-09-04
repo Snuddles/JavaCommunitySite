@@ -10,7 +10,7 @@ public abstract class AtprotoRecord {
     private String ownerDid = null;
     private String recordKey = null;
 
-    public AtprotoRecord(AtUri<AtprotoRecord> atUri, JsonObject json) {
+    public AtprotoRecord(AtUri atUri, JsonObject json) {
         this.setAtUri(atUri);
     }
 
@@ -32,14 +32,14 @@ public abstract class AtprotoRecord {
         this.ownerDid = ownerDid;
     }
 
-    public Optional<AtUri<AtprotoRecord>> getAtUri() {
+    public Optional<AtUri> getAtUri() {
         if (ownerDid == null || recordKey == null) return Optional.empty();
         return Optional.of(
-                new AtUri<>(ownerDid, getRecordCollection(), recordKey)
+                new AtUri(ownerDid, getRecordCollection(), recordKey)
         );
     }
 
-    public void setAtUri(AtUri<AtprotoRecord> atUri) {
+    public void setAtUri(AtUri atUri) {
         this.ownerDid = atUri.getDid();
         if (!this.getRecordCollection().equals(atUri.getCollection()))
             throw new AtprotoInvalidUri("Collection type does not match record's own collection type");

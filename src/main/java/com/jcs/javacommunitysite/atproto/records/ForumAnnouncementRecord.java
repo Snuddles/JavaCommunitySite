@@ -10,10 +10,11 @@ import java.time.OffsetDateTime;
 public class ForumAnnouncementRecord extends AtprotoRecord {
     @Expose private String title;
     @Expose private String body;
-    @Expose private Instant createdAt;
-    @Expose private Instant expiresAt;
 
-    public ForumAnnouncementRecord(AtUri<AtprotoRecord> atUri, JsonObject json) {
+    @Expose private Instant createdAt;
+
+    @Expose private Instant expiresAt;
+    public ForumAnnouncementRecord(AtUri atUri, JsonObject json) {
         super(atUri, json);
         this.title = json.get("title").getAsString();
         this.body = json.get("body").getAsString();
@@ -47,5 +48,37 @@ public class ForumAnnouncementRecord extends AtprotoRecord {
     @Override
     public String getRecordCollection() {
         return "dev.fudgeu.experimental.atforumv1.forum.announcement";
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getBody() {
+        return body;
+    }
+
+    public void setBody(String body) {
+        this.body = body;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Instant getExpiresAt() {
+        return expiresAt;
+    }
+
+    public void setExpiresAt(Instant expiresAt) {
+        this.expiresAt = expiresAt;
     }
 }

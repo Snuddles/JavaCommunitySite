@@ -4,16 +4,14 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.jcs.javacommunitysite.atproto.exceptions.AtprotoInvalidUri;
-import com.jcs.javacommunitysite.atproto.records.AtprotoRecord;
 
 import java.lang.reflect.Type;
 
-public class AtUri<T extends AtprotoRecord> implements JsonSerializer<AtUri<T>> {
+public class AtUri implements JsonSerializer<AtUri> {
 
     private String did;
     private String collection;
     private String recordKey;
-    private T cachedRecord;
 
     public AtUri(String atUri) {
         // Parse whole AtUri
@@ -36,16 +34,8 @@ public class AtUri<T extends AtprotoRecord> implements JsonSerializer<AtUri<T>> 
     }
 
     @Override
-    public JsonElement serialize(AtUri<T> tAtUri, Type type, JsonSerializationContext jsonSerializationContext) {
+    public JsonElement serialize(AtUri tAtUri, Type type, JsonSerializationContext jsonSerializationContext) {
         return jsonSerializationContext.serialize(this.toString());
-    }
-
-    public T fetch() {
-        if (cachedRecord != null) {
-            return cachedRecord;
-        }
-
-        return null; // TODO
     }
 
     public String toString() {

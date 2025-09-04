@@ -1,7 +1,9 @@
 package com.jcs.javacommunitysite.controller;
 
 import com.google.gson.JsonObject;
+import com.jcs.javacommunitysite.atproto.AtUri;
 import com.jcs.javacommunitysite.atproto.AtprotoSession;
+import com.jcs.javacommunitysite.atproto.records.AtprotoRecord;
 import com.jcs.javacommunitysite.atproto.records.ForumIdentityRecord;
 import com.jcs.javacommunitysite.atproto.records.PostRecord;
 import org.springframework.http.ResponseEntity;
@@ -23,12 +25,12 @@ public class HeartbeatController {
 //             JsonObject resp = session.createRecord(post);
 
             // ForumGroupRecord testGroup = new ForumGroupRecord("Test Group 1", "This is a test group");
-            ForumIdentityRecord testForum = new ForumIdentityRecord("Test Forum 503", "This is a test forum", Color.RED);
-            JsonObject resp = session.createRecord(testForum);
+            //ForumIdentityRecord testForum = new ForumIdentityRecord("Test Forum 504", "This is a test forum", Color.RED);
+            //testForum.setName("Test Forum 506");
+            //testForum.setRecordKey("3lxy6zfzrdw2i");
+            // AtUri(null, "dev.fudgeu.experimental.atforumv1.forum.identity", "3lxy6zfzrdw2i");
 
-            System.out.println(resp);
-
-            return ResponseEntity.status(200).body("OK - " + testForum.getAtUri().orElseThrow());
+            return ResponseEntity.status(200).body("OK");
         } catch (Exception e) {
             System.out.println(e);
             return ResponseEntity.status(500).body("BAD");
