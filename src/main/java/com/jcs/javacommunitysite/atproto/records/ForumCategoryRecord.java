@@ -5,6 +5,8 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.jcs.javacommunitysite.atproto.AtUri;
 
+import static com.jcs.javacommunitysite.JavaCommunitySiteApplication.addLexiconPrefix;
+
 public class ForumCategoryRecord extends AtprotoRecord {
     public enum ForumCategoryType {
         @SerializedName("discussion")
@@ -50,7 +52,7 @@ public class ForumCategoryRecord extends AtprotoRecord {
 
     @Override
     public String getRecordCollection() {
-        return "dev.fudgeu.experimental.atforumv1.forum.category";
+        return addLexiconPrefix("forum.category");
     }
 
     public String getName() {

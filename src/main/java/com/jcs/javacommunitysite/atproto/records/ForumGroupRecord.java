@@ -4,6 +4,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.annotations.Expose;
 import com.jcs.javacommunitysite.atproto.AtUri;
 
+import static com.jcs.javacommunitysite.JavaCommunitySiteApplication.addLexiconPrefix;
+
 public class ForumGroupRecord extends AtprotoRecord {
     @Expose private String name;
 
@@ -32,7 +34,7 @@ public class ForumGroupRecord extends AtprotoRecord {
 
     @Override
     public String getRecordCollection() {
-        return "dev.fudgeu.experimental.atforumv1.forum.group";
+        return addLexiconPrefix("forum.group");
     }
 
     public String getDescription() {

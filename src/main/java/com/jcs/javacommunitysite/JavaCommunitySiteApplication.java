@@ -16,12 +16,12 @@ public class JavaCommunitySiteApplication {
             JetstreamWebsocketClient wsClient = new JetstreamWebsocketClient(new URI("wss://jetstream2.us-east.bsky.network/subscribe?wantedCollections=dev.fudgeu.experimental.atforumv1.forum.identity"));
             System.out.println("CREATED WS CLIENT");
 
-            wsClient.registerJetstreamHandler("dev.fudgeu.experimental.atforumv1.forum.identity", new JetstreamForumIdentityHandler());
-            wsClient.registerJetstreamHandler("dev.fudgeu.experimental.atforumv1.forum.group", new JetstreamForumGroupHandler());
-            wsClient.registerJetstreamHandler("dev.fudgeu.experimental.atforumv1.forum.category", new JetstreamForumCategoryHandler());
-            wsClient.registerJetstreamHandler("dev.fudgeu.experimental.atforumv1.feed.post", new JetstreamPostHandler());
-            wsClient.registerJetstreamHandler("dev.fudgeu.experimental.atforumv1.feed.vote", new JetstreamVoteHandler());
-            wsClient.registerJetstreamHandler("dev.fudgeu.experimental.atforumv1.feed.reply", new JetstreamReplyHandler());
+            wsClient.registerJetstreamHandler(addLexiconPrefix("forum.identity"), new JetstreamForumIdentityHandler());
+            wsClient.registerJetstreamHandler(addLexiconPrefix("forum.group"), new JetstreamForumGroupHandler());
+            wsClient.registerJetstreamHandler(addLexiconPrefix("forum.category"), new JetstreamForumCategoryHandler());
+            wsClient.registerJetstreamHandler(addLexiconPrefix("feed.post"), new JetstreamPostHandler());
+            wsClient.registerJetstreamHandler(addLexiconPrefix("feed.vote"), new JetstreamVoteHandler());
+            wsClient.registerJetstreamHandler(addLexiconPrefix("feed.reply"), new JetstreamReplyHandler());
 
             wsClient.connect();
         } catch (URISyntaxException e) {
@@ -29,5 +29,9 @@ public class JavaCommunitySiteApplication {
         }
 
         SpringApplication.run(JavaCommunitySiteApplication.class, args);
+    }
+
+    public static String addLexiconPrefix(String postfix) {
+        return "dev.fudgeu.experimental.atforumv1." + postfix;
     }
 }

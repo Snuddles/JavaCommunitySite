@@ -6,6 +6,8 @@ import com.jcs.javacommunitysite.atproto.AtUri;
 
 import java.time.Instant;
 
+import static com.jcs.javacommunitysite.JavaCommunitySiteApplication.addLexiconPrefix;
+
 public class VoteRecord extends AtprotoRecord {
     @Expose private AtUri root;
     @Expose private Instant createdAt;
@@ -34,7 +36,7 @@ public class VoteRecord extends AtprotoRecord {
 
     @Override
     public String getRecordCollection() {
-        return "dev.fudgeu.experimental.atforumv1.feed.vote";
+        return addLexiconPrefix("feed.vote");
     }
 
     public AtUri getRoot() {

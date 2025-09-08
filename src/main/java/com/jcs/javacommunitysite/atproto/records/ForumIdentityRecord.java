@@ -6,6 +6,8 @@ import com.jcs.javacommunitysite.atproto.AtUri;
 
 import java.awt.*;
 
+import static com.jcs.javacommunitysite.JavaCommunitySiteApplication.addLexiconPrefix;
+
 public class ForumIdentityRecord extends AtprotoRecord {
     @Expose private String name;
     @Expose private String description;
@@ -43,7 +45,7 @@ public class ForumIdentityRecord extends AtprotoRecord {
 
     @Override
     public String getRecordCollection() {
-        return "dev.fudgeu.experimental.atforumv1.forum.identity";
+        return addLexiconPrefix("forum.identity");
     }
 
     public String getName() {

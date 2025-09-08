@@ -7,13 +7,14 @@ import com.jcs.javacommunitysite.atproto.AtUri;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 
+import static com.jcs.javacommunitysite.JavaCommunitySiteApplication.addLexiconPrefix;
+
 public class ForumAnnouncementRecord extends AtprotoRecord {
     @Expose private String title;
     @Expose private String body;
-
     @Expose private Instant createdAt;
-
     @Expose private Instant expiresAt;
+
     public ForumAnnouncementRecord(AtUri atUri, JsonObject json) {
         super(atUri, json);
         this.title = json.get("title").getAsString();
@@ -47,7 +48,7 @@ public class ForumAnnouncementRecord extends AtprotoRecord {
 
     @Override
     public String getRecordCollection() {
-        return "dev.fudgeu.experimental.atforumv1.forum.announcement";
+        return addLexiconPrefix("forum.announcement");
     }
 
     public String getTitle() {

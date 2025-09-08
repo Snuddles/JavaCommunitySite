@@ -6,6 +6,8 @@ import com.jcs.javacommunitysite.atproto.AtUri;
 
 import java.time.Instant;
 
+import static com.jcs.javacommunitysite.JavaCommunitySiteApplication.addLexiconPrefix;
+
 public class ReplyRecord extends AtprotoRecord {
     @Expose private String text;
     @Expose private Instant createdAt;
@@ -34,7 +36,7 @@ public class ReplyRecord extends AtprotoRecord {
 
     @Override
     public String getRecordCollection() {
-        return "dev.fudgeu.experimental.atforumv1.feed.reply";
+        return addLexiconPrefix("feed.reply");
     }
 
     public String getText() {

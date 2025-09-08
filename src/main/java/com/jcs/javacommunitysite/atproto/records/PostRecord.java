@@ -8,6 +8,8 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.jcs.javacommunitysite.JavaCommunitySiteApplication.addLexiconPrefix;
+
 public class PostRecord extends AtprotoRecord {
 
     @Expose private String text;
@@ -56,7 +58,7 @@ public class PostRecord extends AtprotoRecord {
 
     @Override
     public String getRecordCollection() {
-        return "dev.fudgeu.experimental.atforumv1.feed.post";
+        return addLexiconPrefix("feed.post");
     }
 
     public String getText() {
