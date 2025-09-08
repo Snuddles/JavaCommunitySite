@@ -5,9 +5,6 @@ import com.jcs.javacommunitysite.atproto.jetstream.handlers.*;
 import jakarta.annotation.PostConstruct;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.Executor;
 
 import static com.jcs.javacommunitysite.JavaCommunitySiteApplication.addLexiconPrefix;
 
@@ -35,21 +31,6 @@ public class JavaCommunitySiteApplication {
     @GetMapping("/api/heartbeat")
     public ResponseEntity<String> heartbeat() {
         return ResponseEntity.ok("OK");
-    }
-}
-
-
-@Configuration
-class JetstreamAsyncConfig {
-    @Bean(name = "jetstreamExecutor")
-    public Executor jetstreamExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(1);
-        executor.setMaxPoolSize(1);
-        executor.setQueueCapacity(0);
-        executor.setThreadNamePrefix("JetstreamExecutor-");
-        executor.initialize();
-        return executor;
     }
 }
 
