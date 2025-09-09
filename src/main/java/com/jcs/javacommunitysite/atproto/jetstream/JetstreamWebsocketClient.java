@@ -18,7 +18,6 @@ import java.util.Map;
 
 public class JetstreamWebsocketClient extends WebSocketClient {
     private Map<String, JetstreamHandler> handlers = new HashMap<>();
-    private Map<String, Type> collectionMap = new HashMap<>();
 
     public JetstreamWebsocketClient(URI serverUri) {
         super(serverUri);
@@ -41,10 +40,6 @@ public class JetstreamWebsocketClient extends WebSocketClient {
 
         // Right now we're only looking at commits. It'll prolly be useful to look at the other types later (identity & account)
         if (!kind.equals("commit")) return;
-
-        // TODO remove
-        System.out.println("MESSAGE RECEIVED:");
-        System.out.println(s);
 
         // Get commit and determine commit operation and other record info
         JsonObject commit = responseObject.get("commit").getAsJsonObject();
