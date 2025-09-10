@@ -69,7 +69,7 @@ CREATE TABLE notification_history (
     post_id UUID NOT NULL REFERENCES "post"(id) ON DELETE CASCADE,
     comment_id UUID REFERENCES "comment"(id) ON DELETE CASCADE,
     type notification_type NOT NULL,
-    read_at TIMESTAMPTZ,
+    read_at TIMESTAMPTZ DEFAULT NULL,
     created_at TIMESTAMPTZ DEFAULT now(),
     UNIQUE (recipient_user_id, triggering_user_id, post_id, comment_id)
 );
