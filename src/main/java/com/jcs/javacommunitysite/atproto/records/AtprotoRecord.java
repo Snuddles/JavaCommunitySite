@@ -10,6 +10,10 @@ public abstract class AtprotoRecord {
     private String ownerDid = null;
     private String recordKey = null;
 
+    public AtprotoRecord(AtUri atUri) {
+        this.setAtUri(atUri);
+    }
+
     public AtprotoRecord(AtUri atUri, JsonObject json) {
         this.setAtUri(atUri);
     }
