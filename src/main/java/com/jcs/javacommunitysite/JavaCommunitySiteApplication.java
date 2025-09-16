@@ -3,8 +3,10 @@ package com.jcs.javacommunitysite;
 import com.jcs.javacommunitysite.atproto.jetstream.JetstreamWebsocketClient;
 import com.jcs.javacommunitysite.atproto.jetstream.handlers.*;
 import jakarta.annotation.PostConstruct;
+import nz.net.ultraq.thymeleaf.layoutdialect.LayoutDialect;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,6 +34,12 @@ public class JavaCommunitySiteApplication {
     @GetMapping("/api/heartbeat")
     public ResponseEntity<String> heartbeat() {
         return ResponseEntity.ok("OK");
+    }
+
+    // Enable thymeleaf-layout-dialect
+    @Bean
+    public LayoutDialect layoutDialect() {
+        return new LayoutDialect();
     }
 }
 

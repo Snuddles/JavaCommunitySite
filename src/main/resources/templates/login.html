@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html
+    lang="en"
+    xmlns:th="https://www.thymeleaf.org"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{root}"
+>
+<head>
+    <meta charset="UTF-8">
+    <title>Log into JCS</title>
+    <link rel="stylesheet" href="/login.css" />
+</head>
+<body>
+    <div layout:fragment="content" class="login-container">
+        <h1>jcs.</h1>
+        <h2>Login with AtProto</h2>
+        <form id="loginForm" class="login-form" action="#" th:action="@{/login}" th:object="${loginForm}" method="post">
+            <input id="loginHandle" class="textbox" type="text" th:field="*{handle}" placeholder="Handle" required />
+            <input id="loginPassword" class="textbox" type="password" th:field="*{password}" name="password" placeholder="Password" required />
+            <button id="loginButton" class="button" type="submit" disabled>Login</button>
+        </form>
+
+        <p id="errorMsg" class="errorText" th:if="${errMsg != null}" th:text="${errMsg}" />
+
+        <span class="aside signup-aside">
+            <p>Don't have an AtProto account yet?</p>
+            <p>Sign up for one with <a href="https://bsky.app/">Bluesky</a></p>
+        </span>
+
+        <script>
+            /* Disable login button if form is empty or submitted */
+            let usernameIsEmpty = document.getElementById("loginHandle").value.length === 0
+            let passwordIsEmpty = document.getElementById("loginPassword").value.length === 0
+            let submitLock = false
+
+            function updateLoginButtonState() {
+                document.getElementById("loginButton").disabled = usernameIsEmpty || passwordIsEmpty || submitLock
+            }
+
+            document.getElementById("loginHandle").addEventListener("input", e => {
+                usernameIsEmpty = e.target.value.length === 0
+                updateLoginButtonState()
+            })
+            document.getElementById("loginPassword").addEventListener("input", e => {
+                passwordIsEmpty = e.target.value.length === 0
+                updateLoginButtonState()
+            })
+
+            /* Lock form on submission. Also, clear error message */
+            document.getElementById("loginForm").addEventListener("submit", e => {
+                submitLock = true
+                updateLoginButtonState()
+
+                const errorMsgElement = document.getElementById("errorMsg")
+                if (errorMsgElement) {
+                    errorMsgElement.remove()
+                }
+            })
+
+            updateLoginButtonState()
+        </script>
+    </div>
+</body>
+</html>
