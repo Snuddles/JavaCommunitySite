@@ -6,6 +6,7 @@ build/
 *.war
 *.zip
 *.tar
+jte-classes/
 
 # === Maven Wrapper ===
 .mvn/

@@ -1,26 +1,25 @@
-<!DOCTYPE html>
-<html
-    lang="en"
-    xmlns:th="https://www.thymeleaf.org"
-    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{root}"
->
-<head>
-    <meta charset="UTF-8">
-    <title>Log into JCS</title>
-    <link rel="stylesheet" href="/login.css" />
-</head>
-<body>
-    <div layout:fragment="content" class="login-container">
+@import com.jcs.javacommunitysite.forms.LoginForm
+@import java.util.Arrays
+
+@param LoginForm loginForm
+@param String errMsg
+
+@template.root(
+    title = "Log into JCS",
+    stylesheets = Arrays.asList("/login.css"),
+    content = @`
+    <div class="login-container">
         <h1>jcs.</h1>
         <h2>Login with AtProto</h2>
-        <form id="loginForm" class="login-form" action="#" th:action="@{/login}" th:object="${loginForm}" method="post">
-            <input id="loginHandle" class="textbox" type="text" th:field="*{handle}" placeholder="Handle" required />
-            <input id="loginPassword" class="textbox" type="password" th:field="*{password}" name="password" placeholder="Password" required />
+        <form id="loginForm" class="login-form" action="/login" method="post">
+            <input id="loginHandle" class="textbox" type="text" name="handle" value="${loginForm.getHandle()}" placeholder="Handle" required />
+            <input id="loginPassword" class="textbox" type="password" name="password" value="${loginForm.getPassword()}" placeholder="Password" required />
             <button id="loginButton" class="button" type="submit" disabled>Login</button>
         </form>
 
-        <p id="errorMsg" class="errorText" th:if="${errMsg != null}" th:text="${errMsg}" />
+        @if(errMsg != null)
+            <p id="errorMsg" class="errorText">${errMsg}</p>
+        @endif
 
         <span class="aside signup-aside">
             <p>Don't have an AtProto account yet?</p>
@@ -60,5 +59,5 @@
             updateLoginButtonState()
         </script>
     </div>
-</body>
-</html>
+    `
+)
