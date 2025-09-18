@@ -21,6 +21,10 @@ public class PostRecord extends AtprotoRecord {
     @Expose private List<String> tags;
     @Expose private AtUri solution = null;
 
+    public PostRecord(AtUri atUri){
+        super(atUri);
+    }
+
     public PostRecord(AtUri atUri, JsonObject json) {
         super(atUri, json);
         this.title = json.get("title").getAsString();
