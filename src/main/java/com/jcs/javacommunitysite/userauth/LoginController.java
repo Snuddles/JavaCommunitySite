@@ -23,12 +23,22 @@ public class LoginController {
 
     @GetMapping("/login")
     public String test(Model model) {
+        // Check if user is already logged in - redirect if so
+        if (sessionService.isAuthenticated()) {
+            return "redirect:/";
+        }
+
         model.addAttribute("loginForm", new LoginForm());
         return "login";
     }
 
     @PostMapping("/login")
     public String login(@ModelAttribute LoginForm loginForm, Model model) {
+        // Check if user is already logged in - log out if so
+        if (sessionService.isAuthenticated()) {
+            sessionService.clearSession();
+        }
+
         try {
             String pdsHost = "https://bsky.social"; // TODO automatically determine this from handle
             String handle = loginForm.getHandle();
