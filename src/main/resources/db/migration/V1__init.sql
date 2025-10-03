@@ -75,3 +75,4 @@ CREATE TABLE notification_history (
 );
 
 CREATE INDEX idx_notification_history_recipient_user_id ON notification_history(recipient_user_id);
+

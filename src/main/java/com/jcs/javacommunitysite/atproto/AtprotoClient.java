@@ -89,4 +89,34 @@ public class AtprotoClient {
         JsonObject response = HttpUtil.post(url, payload, headers);
         return response;
     }
+
+    public JsonObject getRecord(String repo, String collection, String rkey) throws AtprotoUnauthorized, IOException {
+        URL url = new URL(new URL(session.getPdsHost()), 
+            "/xrpc/com.atproto.repo.getRecord?repo=" + repo + "&collection=" + collection + "&rkey=" + rkey);
+        
+        Map<String, String> headers = new HashMap<>();
+        headers.putAll(session.getAuthHeaders());
+        
+        JsonObject response = HttpUtil.get(url, headers);
+        return response;
+    }
+
+    public JsonObject listRecords(String repo, String collection, Integer limit, String cursor) throws AtprotoUnauthorized, IOException {
+        StringBuilder urlString = new StringBuilder("/xrpc/com.atproto.repo.listRecords?repo=" + repo + "&collection=" + collection);
+        
+        if (limit != null) {
+            urlString.append("&limit=").append(limit);
+        }
+        if (cursor != null) {
+            urlString.append("&cursor=").append(cursor);
+        }
+        
+        URL url = new URL(new URL(session.getPdsHost()), urlString.toString());
+        
+        Map<String, String> headers = new HashMap<>();
+        headers.putAll(session.getAuthHeaders());
+        
+        JsonObject response = HttpUtil.get(url, headers);
+        return response;
+    }
 }
