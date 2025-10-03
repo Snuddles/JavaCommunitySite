@@ -1,69 +1,57 @@
-# === Makefile ===
-.PHONY: dev dev-local dev-remote clean logs down up restart ps db build-prod prod
+# Makefile for JCS Docker
 
-# Environment files
-ENV_FILE=.env
+SERVICE_NAME=jcs-backend
+COMPOSE_FILE=docker-compose.yaml
+COMPOSE_PROD_FILE=docker-compose.prod.yaml
 
-# === Development Commands ===
+# Start the existing container (does NOT recreate)
+start:
+	@echo "Starting ${SERVICE_NAME}..."
+	docker-compose -f ${COMPOSE_FILE} up -d
 
-# Default development (local)
-dev: dev-local
+# Stop the running container (does NOT remove)
+stop:
+	@echo "Stopping ${SERVICE_NAME}..."
+	docker-compose -f ${COMPOSE_FILE} stop
 
-# Check if .env file exists
-check-env:
-	@if [ ! -f .env ]; then \
-		echo "❌ Error: .env file not found"; \
-		echo "Please create .env file: cp .env.example .env"; \
-		exit 1; \
-	fi
-
-# Development with local PostgreSQL (Docker)
-dev-local: check-env
-	@echo "🐘 Starting with local PostgreSQL database..."
-	source .env && SPRING_PROFILES_ACTIVE=local docker compose up --build -d
-
-# Development with remote AWS RDS
-dev-remote: check-env
-	@echo "☁️  Starting with remote PostgreSQL database..."
-	source .env && SPRING_PROFILES_ACTIVE=remote docker compose up --build -d
-
-# === Standard Docker Commands ===
-
-# Start with local profile (similar to dev-local but in background)
-up: check-env
-	@echo "Starting in background with local PostgreSQL..."
-	source .env && SPRING_PROFILES_ACTIVE=local docker compose up --build -d
-
-down:
-	docker compose down
-
-logs:
-	docker compose logs -f
-
+# Restart the container (stop + start)
 restart:
-	docker compose restart
+	@echo "Restarting ${SERVICE_NAME}..."
+	docker-compose -f ${COMPOSE_FILE} restart
 
-ps:
-	docker compose ps
-
-# === Database Commands ===
-
-# Connect to local database (reads credentials from .env)
-db: check-env
-	@echo "Connecting to local PostgreSQL database..."
-	@DB_USER=$$(grep '^DB_USER=' .env | cut -d '=' -f2) && \
-	docker exec -it jcs-postgres psql -U $$DB_USER -d jcsdb
-
-# === Production Commands ===
-
-prod: check-env
-	source .env && docker compose -f docker-compose.prod.yaml up -d
-
-build-prod: check-env
-	source .env && docker compose -f docker-compose.prod.yaml up --build -d
-
-# === Cleanup Commands ===
-
+# Clean everything (remove container, images, volumes)
 clean:
-	docker compose down -v
+	@echo "Cleaning ${SERVICE_NAME} container, images, and volumes..."
+	docker-compose -f ${COMPOSE_FILE} down --rmi all --volumes --remove-orphans
 	docker system prune -f
+
+# Show logs in real-time
+logs:
+	@echo "Showing logs for ${SERVICE_NAME}..."
+	docker-compose -f ${COMPOSE_FILE} logs -f
+
+# Start production container
+start-prod:
+	@echo "Starting ${SERVICE_NAME} (prod)..."
+	docker-compose -f ${COMPOSE_PROD_FILE} up -d
+
+# Stop production container
+stop-prod:
+	@echo "Stopping ${SERVICE_NAME} (prod)..."
+	docker-compose -f ${COMPOSE_PROD_FILE} stop
+
+# Restart the container (stop + start)
+restart-prod:
+	@echo "Restarting ${SERVICE_NAME}..."
+	docker-compose -f ${COMPOSE_PROD_FILE} restart
+
+# Clean everything (remove container, images, volumes)
+clean-prod:
+	@echo "Cleaning ${SERVICE_NAME} container, images, and volumes..."
+	docker-compose -f ${COMPOSE_PROD_FILE} down --rmi all --volumes --remove-orphans
+	docker system prune -f
+
+# Show production logs
+logs-prod:
+	@echo "Showing logs for ${SERVICE_NAME} (prod)..."
+	docker-compose -f ${COMPOSE_PROD_FILE} logs -f
