@@ -1,4 +1,6 @@
 @param gg.jte.Content content
+@param String title
+@param java.util.List<String> stylesheets
 
 <!doctype html>
 <html lang="en">
@@ -7,8 +9,12 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>${title}</title>
     <link rel="stylesheet" href="./main.css" />
-    <title>Document</title>
+    <link rel="stylesheet" href="/root.css" />
+    @for(String stylesheet : stylesheets)
+        <link rel="stylesheet" href="${stylesheet}" />
+    @endfor
 </head>
 <body class="flex flex-row bg-white">
 <div class="w-60 flex-initial p-4 flex-col border-r-solid border-r-1 border-r-black min-h-svh">
@@ -85,6 +91,10 @@
     </div>
 </div>
 <%-- The Content for the right side of the page --%>
-${content}
+<div class="page-container">
+    <div class="page">
+        ${content}
+    </div>
+</div>
 </body>
 </html>

@@ -1,16 +1,212 @@
 * {
     margin: 0;
+    box-sizing: border-box;
 
     --border-radius-1: 15px;
     --border-radius-2: 10px;
 
     --accent: #6396f4;
+    --accent-hovered: #77a6f7;
     --error-color: #bb0000;
 
+    --subtext-color: gray;
+
+    --bkg-color: white;
+    --accent-text-color: white;
+    --border-color: lightgray;
+
+    --large-text-2: 24px;
+    --large-text-1: 20px;
+    --regular-text: 16px;
+    --small-text: 14px;
+
+    --pfp-post-size: 42px;
+
     font-family: 'Roboto', sans-serif;
+}
+
+h2 {
+    font-size: var(--large-text-2);
+    font-weight: bold;
+}
+
+p {
+    font-size: var(--regular-text);
 }
 
 .errorText {
     color: var(--error-color);
     font-size: 14px;
+}
+
+.page-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 40px;
+}
+
+.page {
+    width: 100%;
+    max-width: 1000px;
+}
+
+.post-page {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+
+    & .mid-reply-runner {
+        margin-left: 35px;
+        width: 1px;
+        height: 20px;
+        background-color: var(--border-color);
+    }
+
+    & .reply-container {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        padding: 15px;
+        flex-grow: 1;
+
+        p {
+            margin-left: calc(var(--pfp-post-size) + 15px);
+            font-weight: bold;
+        }
+
+        & .reply-bottom {
+            display: flex;
+            gap: 15px;
+            flex-grow: 1;
+            & img {
+                width: var(--pfp-post-size);
+                height: var(--pfp-post-size);
+                border-radius: 50%;
+                border: solid 1px var(--border-color);
+                background-color: var(--bkg-color);
+            }
+
+            & .reply-input {
+                all: unset;
+                height: 200px;
+                border: solid 1px var(--border-color);
+                border-radius: var(--border-radius-1);
+                padding: 10px;
+                resize: none;
+                flex-grow: 1;
+            }
+        }
+
+        & .reply-buttons {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        & .runner {
+            position: absolute;
+            top: 0;
+            left: calc(var(--pfp-post-size) / 2 + 14px);
+            width: 1px;
+            height: 64px;
+            background-color: var(--border-color);
+            z-index: -1;
+        }
+    }
+}
+
+.post {
+    position: relative;
+    display: flex;
+    gap: 20px;
+    padding: 15px;
+    width: 100%;
+
+    & .content {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        flex-grow: 1;
+
+        & .header {
+            display: flex;
+            gap: 15px;
+
+            & .profile-pic-container {
+                display: flex;
+                align-items: center;
+                background-color: var(--bkg-color);
+
+                & img {
+                    width: var(--pfp-post-size);
+                    height: var(--pfp-post-size);
+                    border-radius: 50%;
+                    border: solid 1px var(--border-color);
+                }
+            }
+
+            & .poster-info {
+                display: flex;
+                flex-direction: column;
+                flex-grow: 1;
+
+                & .username {
+                    font-weight: bold;
+                }
+
+                & .handle {
+                    color: var(--subtext-color);
+                    font-size: var(--small-text)
+                }
+            }
+
+            & .time-info {
+                color: var(--subtext-color);
+                font-size: var(--small-text);
+            }
+        }
+
+        & .body {
+            margin-left: calc(var(--pfp-post-size) / 2 + 36px);
+        }
+    }
+
+    & .runner {
+        position: absolute;
+        top: 0;
+        left: calc(var(--pfp-post-size) / 2 + 14px);
+        width: 1px;
+        height: 100%;
+        background-color: var(--border-color);
+        z-index: -1;
+    }
+}
+
+.op-post {
+    border: solid 1px lightgray;
+    border-radius: var(--border-radius-1);
+}
+
+
+.button {
+    all: unset;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--accent);
+    color: var(--accent-text-color);
+    border-radius: var(--border-radius-2);
+    padding: 8px 16px;
+    font-weight: bold;
+    user-select: none;
+    transition: background-color 80ms;
+
+    &:hover {
+        cursor: pointer;
+
+    }
 }
