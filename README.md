@@ -17,10 +17,7 @@ touch .env
 ### 2. Start Development
 ```bash
 # Local development (Docker PostgreSQL)
-make dev
-
-# Remote development (AWS RDS)
-make dev-remote
+make start
 ```
 
 ## 📋 Prerequisites
