@@ -1,18 +1,19 @@
 package com.jcs.javacommunitysite.atproto;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.jcs.javacommunitysite.atproto.exceptions.AtprotoUnauthorized;
+import dev.mccue.json.Json;
+import dev.mccue.json.JsonObject;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
 
+import static dev.mccue.json.JsonDecoder.object;
+
 public class HttpUtil {
-    public static JsonObject post(URL url, JsonObject payload, Map<String, String> headers) throws IOException, AtprotoUnauthorized {
-        String payloadString = payload.toString();
+    public static JsonObject post(URL url, Json payload, Map<String, String> headers) throws IOException, AtprotoUnauthorized {
+        String payloadString = Json.write(payload);
 
         // Set up connection
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -44,8 +45,9 @@ public class HttpUtil {
         }
         br.close();
 
-        JsonElement responseElement = JsonParser.parseString(response.toString());
-        return responseElement.getAsJsonObject();
+
+        Json responseElement = Json.read(response.toString());
+        return object(responseElement);
     }
 
     public static JsonObject get(URL url, Map<String, String> headers) throws IOException, AtprotoUnauthorized {

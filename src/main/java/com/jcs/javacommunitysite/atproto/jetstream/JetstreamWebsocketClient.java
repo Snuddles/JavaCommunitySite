@@ -1,20 +1,18 @@
 package com.jcs.javacommunitysite.atproto.jetstream;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+
 import com.jcs.javacommunitysite.atproto.AtUri;
 import com.jcs.javacommunitysite.atproto.exceptions.AtprotoJetstreamException;
-import com.jcs.javacommunitysite.atproto.records.AtprotoRecord;
-import com.jcs.javacommunitysite.atproto.records.PostRecord;
+import dev.mccue.json.Json;
+import dev.mccue.json.JsonObject;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Type;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+
+import static dev.mccue.json.JsonDecoder.*;
 
 public class JetstreamWebsocketClient extends WebSocketClient {
     private Map<String, JetstreamHandler> handlers = new HashMap<>();
@@ -31,21 +29,21 @@ public class JetstreamWebsocketClient extends WebSocketClient {
     @Override
     public void onMessage(String s) {
         // Attempt to convert message to JsonObject
-        JsonElement messageElement = JsonParser.parseString(s);
-        JsonObject responseObject = messageElement.getAsJsonObject();
+        Json messageElement = Json.read(s);
+        JsonObject responseObject = object(messageElement);;
 
         // Get some base info
-        String userDid = responseObject.get("did").getAsString();
-        String kind = responseObject.get("kind").getAsString();
+        String userDid = field(responseObject, "did", string());
+        String kind = field(responseObject, "kind", string());
 
         // Right now we're only looking at commits. It'll prolly be useful to look at the other types later (identity & account)
         if (!kind.equals("commit")) return;
 
         // Get commit and determine commit operation and other record info
-        JsonObject commit = responseObject.get("commit").getAsJsonObject();
-        String commitOperation = commit.get("operation").getAsString();
-        String recordCollection = commit.get("collection").getAsString();
-        String recordKey = commit.get("rkey").getAsString();
+        JsonObject commit = field(responseObject, "commit", object());
+        String commitOperation = field(commit, "operation", string());
+        String recordCollection = field(commit, "collection", string());
+        String recordKey = field(commit, "rkey", string());
         AtUri atUri = new AtUri(userDid, recordCollection, recordKey);
 
         // Get handler for this collection. Throw if handler not found
@@ -56,11 +54,11 @@ public class JetstreamWebsocketClient extends WebSocketClient {
 
         switch (commitOperation) {
             case "create":
-                JsonObject recordJson = commit.get("record").getAsJsonObject();
+                JsonObject recordJson = field(commit, "record", object());
                 handler.handleCreated(atUri, recordJson);
                 break;
             case "update":
-                JsonObject updatedFields = commit.get("record").getAsJsonObject();
+                JsonObject updatedFields = field(commit, "record", object());
                 handler.handleUpdated(atUri, updatedFields);
                 break;
             case "delete":
@@ -82,7 +80,7 @@ public class JetstreamWebsocketClient extends WebSocketClient {
         e.printStackTrace();
     }
 
-    public <T extends AtprotoRecord> void registerJetstreamHandler(String recordCollection, JetstreamHandler handler) {
+    public void registerJetstreamHandler(String recordCollection, JetstreamHandler handler) {
         handlers.put(recordCollection, handler);
     }
 }

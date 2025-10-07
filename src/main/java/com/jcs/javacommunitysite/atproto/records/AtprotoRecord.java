@@ -1,12 +1,13 @@
 package com.jcs.javacommunitysite.atproto.records;
 
-import com.google.gson.JsonObject;
 import com.jcs.javacommunitysite.atproto.AtUri;
 import com.jcs.javacommunitysite.atproto.exceptions.AtprotoInvalidUri;
+import dev.mccue.json.Json;
+import dev.mccue.json.JsonEncodable;
 
 import java.util.Optional;
 
-public abstract class AtprotoRecord {
+public abstract class AtprotoRecord implements JsonEncodable {
     private String ownerDid = null;
     private String recordKey = null;
 
@@ -14,7 +15,7 @@ public abstract class AtprotoRecord {
         this.setAtUri(atUri);
     }
 
-    public AtprotoRecord(AtUri atUri, JsonObject json) {
+    public AtprotoRecord(AtUri atUri, Json json) {
         this.setAtUri(atUri);
     }
 
