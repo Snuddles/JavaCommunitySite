@@ -19,7 +19,7 @@
     <description>java-community-site</description>
 
     <properties>
-        <java.version>25</java.version>
+        <java.version>21</java.version>
         <jooq.version>3.19.9</jooq.version>
     </properties>
 

@@ -11,7 +11,7 @@ RUN mvn generate-sources
 RUN mvn clean package -DskipTests
 
 # ---- Runtime Stage ----
-FROM openjdk:25-jdk-slim
+FROM openjdk:21-jdk-slim
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
