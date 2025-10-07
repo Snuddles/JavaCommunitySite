@@ -1,24 +1,28 @@
 package com.jcs.javacommunitysite.atproto.records;
 
-import com.google.gson.JsonObject;
-import com.google.gson.annotations.Expose;
 import com.jcs.javacommunitysite.atproto.AtUri;
+import dev.mccue.json.Json;
 
 import java.time.Instant;
 
 import static com.jcs.javacommunitysite.JavaCommunitySiteApplication.addLexiconPrefix;
+import static dev.mccue.json.JsonDecoder.*;
 
 public class ReplyRecord extends AtprotoRecord {
-    @Expose private String content;
-    @Expose private Instant createdAt;
-    @Expose private Instant updatedAt = null;
-    @Expose private AtUri root;
+    private String content;
+    private Instant createdAt;
+    private Instant updatedAt = null;
+    private AtUri root;
 
-    public ReplyRecord(AtUri atUri, JsonObject json) {
+    public ReplyRecord(AtUri atUri, Json json) {
         super(atUri, json);
-        this.content = json.get("content").getAsString();
-        this.createdAt = Instant.parse(json.get("createdAt").getAsString());
-        this.root = new AtUri(json.get("root").getAsString());
+
+        this.content = field(json, "content", string());
+        this.createdAt = Instant.parse(field(json, "content", string()));
+        this.updatedAt = optionalNullableField(json, "updatedAt", string())
+                .map(Instant::parse)
+                .orElse(null);
+        this.root = field(json, "root", AtUri::fromJson);
     }
 
     public ReplyRecord(String content, AtUri root) {
@@ -62,5 +66,15 @@ public class ReplyRecord extends AtprotoRecord {
 
     public void setRoot(AtUri root) {
         this.root = root;
+    }
+
+    @Override
+    public Json toJson() {
+        return Json.objectBuilder()
+                .put("content", content)
+                .put("createdAt", createdAt.toString())
+                .put("updatedAt", updatedAt == null ? null : updatedAt.toString())
+                .put("root", root)
+                .build();
     }
 }

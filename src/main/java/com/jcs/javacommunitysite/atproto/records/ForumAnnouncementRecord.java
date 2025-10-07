@@ -1,27 +1,33 @@
 package com.jcs.javacommunitysite.atproto.records;
 
-import com.google.gson.JsonObject;
-import com.google.gson.annotations.Expose;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.jcs.javacommunitysite.atproto.AtUri;
+import dev.mccue.json.Json;
+import dev.mccue.json.JsonEncodable;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;
 
 import static com.jcs.javacommunitysite.JavaCommunitySiteApplication.addLexiconPrefix;
+import static dev.mccue.json.JsonDecoder.field;
+import static dev.mccue.json.JsonDecoder.string;
 
-public class ForumAnnouncementRecord extends AtprotoRecord {
-    @Expose private String title;
-    @Expose private String body;
-    @Expose private Instant createdAt;
-    @Expose private Instant expiresAt;
+public class ForumAnnouncementRecord extends AtprotoRecord implements JsonEncodable {
+    private String title;
+    private String body;
+    private Instant createdAt;
+    private Instant expiresAt;
 
-    public ForumAnnouncementRecord(AtUri atUri, JsonObject json) {
+    @JsonCreator
+    public ForumAnnouncementRecord(AtUri atUri, Json json) {
         super(atUri, json);
-        this.title = json.get("title").getAsString();
-        this.body = json.get("body").getAsString();
-        this.createdAt = Instant.parse(json.get("createdAt").getAsString());
-        this.expiresAt = Instant.parse(json.get("expiresAt").getAsString());
+        this.title = field(json, "title", string());
+        this.body = field(json, "body", string());
+        this.createdAt = Instant.parse(field(json, "createdAt", string()));
+        this.expiresAt = Instant.parse(field(json, "expiresAt", string()));
     }
+
+
 
     public ForumAnnouncementRecord(String title, String body, Instant createdAt, Instant expiresAt) {
         this.title = title;
@@ -81,5 +87,15 @@ public class ForumAnnouncementRecord extends AtprotoRecord {
 
     public void setExpiresAt(Instant expiresAt) {
         this.expiresAt = expiresAt;
+    }
+
+    @Override
+    public Json toJson() {
+        return Json.objectBuilder()
+                .put("title", title)
+                .put("body", body)
+                .put("createdAt", createdAt.toString())
+                .put("expiresAt", expiresAt.toString())
+                .build();
     }
 }
