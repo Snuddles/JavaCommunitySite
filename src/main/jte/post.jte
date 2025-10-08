@@ -18,7 +18,7 @@
             <p>Make a Reply</p>
             <div class="reply-bottom">
                 <img src="/img/user.svg">
-                <textarea class="reply-input"></textarea>
+                <textarea class="post-textarea"></textarea>
             </div>
             <div class="reply-buttons">
                 <button class="button">Reply</button>

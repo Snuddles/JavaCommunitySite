@@ -13,8 +13,7 @@ public class ForumCategoryRecord extends AtprotoRecord implements JsonEncodable 
 
     public enum ForumCategoryType implements JsonEncodable {
         DISCUSSION,
-        QUESTION,
-        ;
+        QUESTION;
 
         @Override
         public Json toJson() {
