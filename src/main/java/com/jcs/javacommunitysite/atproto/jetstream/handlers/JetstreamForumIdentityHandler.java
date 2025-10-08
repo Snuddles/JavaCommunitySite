@@ -1,14 +1,13 @@
 package com.jcs.javacommunitysite.atproto.jetstream.handlers;
 
-import com.google.gson.JsonObject;
 import com.jcs.javacommunitysite.atproto.AtUri;
 import com.jcs.javacommunitysite.atproto.jetstream.JetstreamHandler;
-import com.jcs.javacommunitysite.atproto.records.AtprotoRecord;
 import com.jcs.javacommunitysite.atproto.records.ForumIdentityRecord;
+import dev.mccue.json.Json;
 
 public class JetstreamForumIdentityHandler implements JetstreamHandler {
     @Override
-    public void handleCreated(AtUri atUri, JsonObject recordJson) {
+    public void handleCreated(AtUri atUri, Json recordJson) {
         ForumIdentityRecord record = new ForumIdentityRecord(atUri, recordJson);
 
         System.out.println("FORUM IDENTITY CREATED:");
@@ -19,7 +18,7 @@ public class JetstreamForumIdentityHandler implements JetstreamHandler {
     }
 
     @Override
-    public void handleUpdated(AtUri atUri, JsonObject recordJson) {
+    public void handleUpdated(AtUri atUri, Json recordJson) {
         System.out.println("FORUM IDENTITY UPDATED");
         ForumIdentityRecord record = new ForumIdentityRecord(atUri, recordJson);
     }

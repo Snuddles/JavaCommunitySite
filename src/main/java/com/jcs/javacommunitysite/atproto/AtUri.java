@@ -1,13 +1,12 @@
 package com.jcs.javacommunitysite.atproto;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.jcs.javacommunitysite.atproto.exceptions.AtprotoInvalidUri;
+import dev.mccue.json.Json;
+import dev.mccue.json.JsonDecoder;
+import dev.mccue.json.JsonEncodable;
 
-import java.lang.reflect.Type;
-
-public class AtUri {
+public class AtUri implements JsonEncodable {
 
     private String did;
     private String collection;
@@ -62,5 +61,15 @@ public class AtUri {
 
     public void setRecordKey(String recordKey) {
         this.recordKey = recordKey;
+    }
+
+    @Override
+    public Json toJson() {
+        return Json.of(toString());
+    }
+
+    @JsonCreator
+    public static AtUri fromJson(Json json) {
+        return new AtUri(JsonDecoder.string(json));
     }
 }

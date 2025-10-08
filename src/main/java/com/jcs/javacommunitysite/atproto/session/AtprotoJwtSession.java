@@ -1,46 +1,47 @@
 package com.jcs.javacommunitysite.atproto.session;
 
-import com.google.gson.JsonObject;
 import com.jcs.javacommunitysite.atproto.HttpUtil;
 import com.jcs.javacommunitysite.atproto.exceptions.AtprotoUnauthorized;
+import dev.mccue.json.JsonObject;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import static dev.mccue.json.JsonDecoder.field;
+import static dev.mccue.json.JsonDecoder.string;
+
 public class AtprotoJwtSession implements AtprotoAuthSession {
-    private String jwt;
-    private String refreshJwt;
-    private String pdsHost;
-    private String handle;
+    private final String jwt;
+    private final String pdsHost;
+    private final String handle;
 
     // Factory methods to create sessions
     public static AtprotoJwtSession fromCredentials(String pdsHost, String handle, String password) throws IOException, AtprotoUnauthorized {
         // Create JSON payload
-        JsonObject payload = new JsonObject();
-        payload.addProperty("identifier", handle);
-        payload.addProperty("password", password);
+        JsonObject.Builder payload = JsonObject.builder();
+        payload.put("identifier", handle);
+        payload.put("password", password);
 
         // Create URL and headers
         URL url = new URL(new URL(pdsHost), "/xrpc/com.atproto.server.createSession/");
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/json");
 
-        JsonObject response = HttpUtil.post(url, payload, headers);
+        JsonObject response = HttpUtil.post(url, payload.build(), headers);
 
-        if (!response.has("accessJwt")) throw new AtprotoUnauthorized();
-        if (!response.has("refreshJwt")) throw new AtprotoUnauthorized();
+        if (!response.containsKey("accessJwt")) throw new AtprotoUnauthorized();
+        if (!response.containsKey("refreshJwt")) throw new AtprotoUnauthorized();
 
-        String accessJWT = response.get("accessJwt").getAsString();
-        String refreshJWT = response.get("refreshJwt").getAsString();
+        String accessJWT = field(response, "accessJwt", string());
+        String refreshJWT = field(response, "refreshJwt", string());
 
         return new AtprotoJwtSession(pdsHost, handle, accessJWT, refreshJWT);
     }
 
     public AtprotoJwtSession(String pdsHost, String handle, String jwt, String refreshJwt) {
         this.jwt = jwt;
-        this.refreshJwt = refreshJwt;
         this.pdsHost = pdsHost;
         this.handle = handle;
     }

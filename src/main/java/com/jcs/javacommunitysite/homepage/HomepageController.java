@@ -1,10 +1,10 @@
 package com.jcs.javacommunitysite.homepage;
 
-import com.google.gson.JsonObject;
 import com.jcs.javacommunitysite.atproto.AtprotoClient;
 import com.jcs.javacommunitysite.atproto.service.AtprotoSessionService;
 import com.jcs.javacommunitysite.atproto.records.PostRecord;
 import com.jcs.javacommunitysite.atproto.AtUri;
+import dev.mccue.json.Json;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,7 +41,7 @@ public class HomepageController {
             String forum = (String) postData.get("forum");
             
             // Create post record
-            PostRecord post = new PostRecord(new AtUri(categoryUri), new JsonObject());
+            PostRecord post = new PostRecord(new AtUri(categoryUri), Json.emptyObject());
             
             // Create the record via ATProtocol
             client.createRecord(post);

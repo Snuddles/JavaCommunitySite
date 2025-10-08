@@ -1,8 +1,13 @@
 # Makefile for JCS Docker
 
-SERVICE_NAME=jcs-backend
-COMPOSE_FILE=docker-compose.yaml
-COMPOSE_PROD_FILE=docker-compose.prod.yaml
+set export
+
+SERVICE_NAME := "jcs-backend"
+COMPOSE_FILE := "docker-compose.yaml"
+COMPOSE_PROD_FILE := "docker-compose.prod.yaml"
+
+list:
+    just --list
 
 # Start the existing container (does NOT recreate)
 start:

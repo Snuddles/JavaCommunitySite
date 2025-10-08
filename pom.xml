@@ -67,14 +67,25 @@
 
         <!-- Atproto -->
         <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.13.1</version>
+            <groupId>dev.mccue</groupId>
+            <artifactId>json</artifactId>
+            <version>2024.11.20</version>
+        </dependency>
+        <dependency>
+            <groupId>dev.mccue</groupId>
+            <artifactId>json-jackson</artifactId>
+            <version>2025.02.02</version>
         </dependency>
         <dependency>
             <groupId>org.java-websocket</groupId>
             <artifactId>Java-WebSocket</artifactId>
             <version>1.6.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>dev.mccue</groupId>
+            <artifactId>color</artifactId>
+            <version>2024.10.11</version>
         </dependency>
 
         <!-- Testing -->

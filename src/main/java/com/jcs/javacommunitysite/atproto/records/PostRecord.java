@@ -1,42 +1,57 @@
 package com.jcs.javacommunitysite.atproto.records;
 
-import com.google.gson.JsonObject;
-import com.google.gson.annotations.Expose;
 import com.jcs.javacommunitysite.atproto.AtUri;
+import dev.mccue.json.Json;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static com.jcs.javacommunitysite.JavaCommunitySiteApplication.addLexiconPrefix;
+import static dev.mccue.json.JsonDecoder.*;
 
 public class PostRecord extends AtprotoRecord {
 
-    @Expose private String title;
-    @Expose private String content;
-    @Expose private Instant createdAt;
-    @Expose private Instant updatedAt = null;
-    @Expose private AtUri category;
-    @Expose private String forum;  // should be a DID
-    @Expose private List<String> tags;
-    @Expose private AtUri solution = null;
+    private String title;
+    private String content;
+    private Instant createdAt;
+    private Instant updatedAt = null;
+    private AtUri category;
+    private String forum;  // should be a DID
+    private List<String> tags;
+    private AtUri solution = null;
 
-    public PostRecord(AtUri atUri){
+    public PostRecord(AtUri atUri) {
         super(atUri);
     }
 
-    public PostRecord(AtUri atUri, JsonObject json) {
+    @Override
+    public Json toJson() {
+        return Json.objectBuilder()
+                .put("title", title)
+                .put("content", content)
+                .put("createdAt", createdAt.toString())
+                .put("updatedAt", updatedAt == null ? null : updatedAt.toString())
+                .put("category", category)
+                .put("forum", forum)
+                .put("tags", Json.of(tags, Json::of))
+                .put("solution", solution)
+                .build();
+    }
+
+    public PostRecord(AtUri atUri, Json json) {
         super(atUri, json);
-        this.title = json.get("title").getAsString();
-        this.content = json.get("content").getAsString();
-        this.createdAt = Instant.parse(json.get("createdAt").getAsString());
-        if (json.has("updatedAt"))
-            this.updatedAt = Instant.parse(json.get("updatedAt").getAsString());
-        this.category = new AtUri(json.get("category").getAsString());
-        this.forum = json.get("forum").getAsString();
-        this.tags = new ArrayList<>();
-        json.get("tags").getAsJsonArray().forEach(tag -> this.tags.add(tag.getAsString()));
-        this.solution = json.has("solution") ? new AtUri(json.get("solution").getAsString()) : null;
+        this.title = field(json, "title", string());
+        this.content = field(json, "content", string());
+        this.createdAt = Instant.parse(field(json, "createdAt", string()));
+        this.updatedAt = optionalNullableField(json, "updatedAt", string())
+                .map(Instant::parse)
+                .orElse(null);
+        this.category = field(json, "category", AtUri::fromJson);
+        this.forum = field(json, "forum", string());
+        this.tags = field(json, "tags", array(string()));
+        this.solution = optionalNullableField(json, "solution", AtUri::fromJson, null);
     }
 
     public PostRecord(String title, String content, AtUri category, String forum) {

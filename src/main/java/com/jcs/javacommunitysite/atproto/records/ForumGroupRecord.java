@@ -1,20 +1,21 @@
 package com.jcs.javacommunitysite.atproto.records;
 
-import com.google.gson.JsonObject;
-import com.google.gson.annotations.Expose;
 import com.jcs.javacommunitysite.atproto.AtUri;
+import dev.mccue.json.Json;
 
 import static com.jcs.javacommunitysite.JavaCommunitySiteApplication.addLexiconPrefix;
+import static dev.mccue.json.JsonDecoder.*;
 
 public class ForumGroupRecord extends AtprotoRecord {
-    @Expose private String name;
+    private String name;
+    private String description;
 
-    @Expose private String description;
-
-    public ForumGroupRecord(AtUri atUri, JsonObject json) {
+    public ForumGroupRecord(AtUri atUri, Json json) {
         super(atUri, json);
-        this.name = json.get("name").getAsString();
-        this.description = json.has("description") ? json.get("description").getAsString() : null;
+        this.name = field(json, "name", string());
+        this.description = optionalNullableField(
+                json, "description", string(), null, null
+        );
     }
 
     public ForumGroupRecord(String name) {
@@ -51,5 +52,13 @@ public class ForumGroupRecord extends AtprotoRecord {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Override
+    public Json toJson() {
+        return Json.objectBuilder()
+                .put("name", name)
+                .put("description", description)
+                .build();
     }
 }
