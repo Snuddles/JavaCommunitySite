@@ -1,31 +1,55 @@
 package com.jcs.javacommunitysite.atproto.records;
 
-import com.google.gson.JsonObject;
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
 import com.jcs.javacommunitysite.atproto.AtUri;
+import dev.mccue.json.Json;
+import dev.mccue.json.JsonDecoder;
+import dev.mccue.json.JsonEncodable;
 
 import static com.jcs.javacommunitysite.JavaCommunitySiteApplication.addLexiconPrefix;
+import static dev.mccue.json.JsonDecoder.*;
 
-public class ForumCategoryRecord extends AtprotoRecord {
-    public enum ForumCategoryType {
-        @SerializedName("discussion")
+public class ForumCategoryRecord extends AtprotoRecord implements JsonEncodable {
+
+
+    public enum ForumCategoryType implements JsonEncodable {
         DISCUSSION,
-        @SerializedName("question")
         QUESTION,
+        ;
+
+        @Override
+        public Json toJson() {
+            return switch (this) {
+                case DISCUSSION -> Json.of("discussion");
+                case QUESTION -> Json.of("question");
+            };
+        }
+
+        public static ForumCategoryType fromJson(Json json) {
+            switch (JsonDecoder.string(json)) {
+                case "discussion" -> {
+                    return DISCUSSION;
+                }
+                case "question" -> {
+                    return QUESTION;
+                }
+                default -> {
+                    throw new IllegalArgumentException("Invalid ForumCategoryType: " + json);
+                }
+            }
+        }
     }
 
-    @Expose private String name;
-    @Expose private AtUri group;
-    @Expose private String description;
-    @Expose private ForumCategoryType categoryType;
+    private String name;
+    private AtUri group;
+    private String description;
+    private ForumCategoryType categoryType;
 
-    public ForumCategoryRecord(AtUri atUri, JsonObject json) {
+    public ForumCategoryRecord(AtUri atUri, Json json) {
         super(atUri, json);
-        this.name = json.get("name").getAsString();
-        this.group = new AtUri(json.get("group").getAsString());
-        this.description = json.has("description") ? json.get("description").getAsString() : null;
-        this.categoryType = ForumCategoryType.valueOf(json.get("categoryType").getAsString().toUpperCase());
+        this.name = field(json, "name", string());
+        this.group = field(json, "group", AtUri::fromJson);;
+        this.description = optionalNullableField(json, "description", string(), null, null);
+        this.categoryType = field(json, "categoryType", ForumCategoryType::fromJson);
     }
 
     public ForumCategoryRecord(String name, AtUri group, ForumCategoryType category) {
@@ -84,5 +108,15 @@ public class ForumCategoryRecord extends AtprotoRecord {
 
     public void setCategoryType(ForumCategoryType categoryType) {
         this.categoryType = categoryType;
+    }
+
+    @Override
+    public Json toJson() {
+        return Json.objectBuilder()
+                .put("name", name)
+                .put("group", group)
+                .put("description", description)
+                .put("categoryType", categoryType)
+                .build();
     }
 }

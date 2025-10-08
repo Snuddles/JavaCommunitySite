@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   jcs-backend:
     build:
@@ -8,8 +6,10 @@ services:
     container_name: jcs-backend
     ports:
       - '8080:8080'
+    env_file:
+      - ./.env
     environment:
-      - SPRING_PROFILES_ACTIVE=remote
+      - DB_URL=${DB_URL}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
     restart: unless-stopped

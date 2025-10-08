@@ -6,37 +6,16 @@ services:
     container_name: jcs-backend
     ports:
       - '8080:8080'
+    env_file:
+      - ./.env
     environment:
-      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-local}
+      - DB_URL=${DB_URL}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
-    depends_on:
-      - postgres
     volumes:
       - .:/app
     networks:
       - jcs-network
-
-  postgres:
-    image: postgres:16
-    container_name: jcs-postgres
-    restart: always
-    environment:
-      - POSTGRES_DB=jcsdb
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-    ports:
-      - '5432:5432'
-    volumes:
-      - jcs-db:/var/lib/postgresql/data
-    networks:
-      - jcs-network
-    profiles:
-      - local
-      - ""  # Default profile
-
-volumes:
-  jcs-db:
 
 networks:
   jcs-network:

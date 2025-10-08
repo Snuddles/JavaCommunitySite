@@ -29,15 +29,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-thymeleaf</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>nz.net.ultraq.thymeleaf</groupId>-->
-<!--            <artifactId>thymeleaf-layout-dialect</artifactId>-->
-<!--            <version>3.4.0</version>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>gg.jte</groupId>
             <artifactId>jte-spring-boot-starter-3</artifactId>
@@ -62,16 +53,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Flyway -->
-        <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-database-postgresql</artifactId>
-        </dependency>
-
         <!-- Security & Dev Tools -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -86,14 +67,25 @@
 
         <!-- Atproto -->
         <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.13.1</version>
+            <groupId>dev.mccue</groupId>
+            <artifactId>json</artifactId>
+            <version>2024.11.20</version>
+        </dependency>
+        <dependency>
+            <groupId>dev.mccue</groupId>
+            <artifactId>json-jackson</artifactId>
+            <version>2025.02.02</version>
         </dependency>
         <dependency>
             <groupId>org.java-websocket</groupId>
             <artifactId>Java-WebSocket</artifactId>
             <version>1.6.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>dev.mccue</groupId>
+            <artifactId>color</artifactId>
+            <version>2024.10.11</version>
         </dependency>
 
         <!-- Testing -->
@@ -124,39 +116,6 @@
                     </execution>
                 </executions>
             </plugin>
-<!--            <plugin>-->
-<!--                <groupId>org.jooq</groupId>-->
-<!--                <artifactId>jooq-codegen-maven</artifactId>-->
-<!--                <version>${jooq.version}</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <id>generate-jooq</id>-->
-<!--                        <phase>generate-sources</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>generate</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <jdbc>-->
-<!--                                <driver>org.postgresql.Driver</driver>-->
-<!--                                <url>${env.DB_URL}</url>-->
-<!--                                <user>${env.DB_USER}</user>-->
-<!--                                <password>${env.DB_PASSWORD}</password>-->
-<!--                            </jdbc>-->
-<!--                            <generator>-->
-<!--                                <name>org.jooq.codegen.DefaultGenerator</name>-->
-<!--                                <database>-->
-<!--                                    <name>org.jooq.meta.postgres.PostgresDatabase</name>-->
-<!--                                    <inputSchema>public</inputSchema>-->
-<!--                                </database>-->
-<!--                                <target>-->
-<!--                                    <packageName>com.jcs.generated.jooq</packageName>-->
-<!--                                    <directory>target/generated-sources/jooq</directory>-->
-<!--                                </target>-->
-<!--                            </generator>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
         </plugins>
     </build>
 </project>
