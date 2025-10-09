@@ -20,7 +20,10 @@
 
     <properties>
         <java.version>21</java.version>
-        <jooq.version>3.19.9</jooq.version>
+        <jooq.version>3.20.8</jooq.version>
+        <jte.version>3.2.1</jte.version>
+        <gson.version>2.13.1</gson.version>
+        <websocket.version>1.6.0</websocket.version>
     </properties>
 
     <dependencies>
@@ -32,12 +35,12 @@
         <dependency>
             <groupId>gg.jte</groupId>
             <artifactId>jte-spring-boot-starter-3</artifactId>
-            <version>3.2.1</version>
+            <version>${jte.version}</version>
         </dependency>
         <dependency>
             <groupId>gg.jte</groupId>
             <artifactId>jte</artifactId>
-            <version>3.2.1</version>
+            <version>${jte.version}</version>
         </dependency>
 
         <!-- Spring Boot jOOQ support -->
@@ -79,7 +82,7 @@
         <dependency>
             <groupId>org.java-websocket</groupId>
             <artifactId>Java-WebSocket</artifactId>
-            <version>1.6.0</version>
+            <version>${websocket.version}</version>
         </dependency>
 
         <dependency>
@@ -111,8 +114,50 @@
                 <version>${jooq.version}</version>
                 <executions>
                     <execution>
-                        <id>disable-jooq-codegen</id>
-                        <phase>none</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <jdbc>
+                        <driver>org.postgresql.Driver</driver>
+                        <!--suppress UnresolvedMavenProperty -->
+                        <url>${DB_URL}</url>
+                        <!--suppress UnresolvedMavenProperty -->
+                        <user>${DB_USER}</user>
+                        <!--suppress UnresolvedMavenProperty -->
+                        <password>${DB_PASSWORD}</password>
+                    </jdbc>
+                    <generator>
+                        <database>
+                            <name>org.jooq.meta.postgres.PostgresDatabase</name>
+                            <inputSchema>public</inputSchema>
+                        </database>
+                        <target>
+                            <packageName>com.jcs.javacommunitysite.jooq</packageName>
+                            <directory>target/generated-sources/jooq</directory>
+                        </target>
+                    </generator>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.4.0</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>target/generated-sources/jooq</source>
+                            </sources>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
