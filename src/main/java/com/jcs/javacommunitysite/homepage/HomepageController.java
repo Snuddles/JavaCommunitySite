@@ -1,5 +1,6 @@
 package com.jcs.javacommunitysite.homepage;
 
+import com.jcs.javacommunitysite.JavaCommunitySiteApplication;
 import com.jcs.javacommunitysite.atproto.AtprotoClient;
 import com.jcs.javacommunitysite.atproto.service.AtprotoSessionService;
 import com.jcs.javacommunitysite.atproto.records.PostRecord;
@@ -8,6 +9,7 @@ import org.jooq.DSLContext;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -17,6 +19,7 @@ import java.util.stream.Collectors;
 
 import static com.jcs.javacommunitysite.jooq.tables.CategoryGroup.CATEGORY_GROUP;
 import static com.jcs.javacommunitysite.jooq.tables.Category.CATEGORY;
+import static com.jcs.javacommunitysite.JavaCommunitySiteApplication.JCS_FORUM_ATURI;
 
 @RestController
 @RequestMapping("/homepage")
@@ -45,10 +48,17 @@ public class HomepageController {
                 logic to fetch data from form into Json variable
             */
 
+            Instant createdAt = Instant.now();
+            Instant updatedAt = createdAt;
+
             Json postDataJson = Json.objectBuilder()
-                    .put("", "")
-                    .put("", "")
-                    .put("", "")
+                    .put("title", "")
+                    .put("content", "")
+                    .put("createdAt", createdAt.toString())
+                    .put("updatedAt", updatedAt.toString())
+                    .put("category", "")
+                    .put("forum", JCS_FORUM_ATURI)
+                    .put("tags", "")
                     .toJson();
 
             PostRecord post = new PostRecord(postDataJson);

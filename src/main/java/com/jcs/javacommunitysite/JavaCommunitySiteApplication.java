@@ -19,7 +19,7 @@ import static com.jcs.javacommunitysite.JavaCommunitySiteApplication.addLexiconP
 @RestController
 public class JavaCommunitySiteApplication {
 
-    public static final String JCS_FORUM_DID = "did:plc:bwh2fxasbh3ieuxjyym7bmeh";
+    public static final String JCS_FORUM_ATURI = "at://did:plc:bwh2fxasbh3ieuxjyym7bmeh";
 
     public static void main(String[] args) {
         SpringApplication.run(JavaCommunitySiteApplication.class, args);
