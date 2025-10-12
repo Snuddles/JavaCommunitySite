@@ -60,6 +60,7 @@ public class HomepageController {
                     .put("category", "")
                     .put("forum", JCS_FORUM_ATURI)
                     .put("tags", "")
+                    .put("solution", "")
                     .toJson();
 
             PostRecord post = new PostRecord(postDataJson);
