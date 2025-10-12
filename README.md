@@ -17,14 +17,14 @@ touch .env
 ### 2. Start Development
 ```bash
 # Local development (Docker PostgreSQL)
-make start
+just start
 ```
 
 ## 📋 Prerequisites
 
 - Docker and Docker Compose
 - Java 21
-- Maven 3.9+
+- Maven 3.11.X+
 
 ## 🏗️ Architecture
 

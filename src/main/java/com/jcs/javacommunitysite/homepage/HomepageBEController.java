@@ -3,17 +3,14 @@ package com.jcs.javacommunitysite.homepage;
 import com.jcs.javacommunitysite.atproto.AtprotoClient;
 import com.jcs.javacommunitysite.atproto.service.AtprotoSessionService;
 import com.jcs.javacommunitysite.atproto.records.PostRecord;
-import com.jcs.javacommunitysite.atproto.AtUri;
 import dev.mccue.json.Json;
 import org.jooq.DSLContext;
 
 import static com.jcs.javacommunitysite.jooq.tables.Category.CATEGORY;
-import static com.jcs.javacommunitysite.jooq.tables.CategoryGroup.CATEGORY_GROUP;
+import static com.jcs.javacommunitysite.jooq.tables.Group.GROUP;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -51,7 +48,7 @@ public class HomepageBEController {
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "message", "Post created successfully",
-                    "atUri", Objects.requireNonNull(post.getAtUri().map(AtUri::toString).orElse(null))
+                    "atUri", Objects.requireNonNull(post.getAtUri().toString())
             ));
 
         } catch (Exception e) {
@@ -74,46 +71,37 @@ public class HomepageBEController {
                 ));
             }
 
-            // Fetch all category groups with their categories
+            // Fetch all groups with their categories
             var groupsWithCategories = dsl.select(
-                            CATEGORY_GROUP.ID.as("group_id"),
-                            CATEGORY_GROUP.NAME.as("group_name"),
-                            CATEGORY_GROUP.DESCRIPTION.as("group_description"),
-                            CATEGORY_GROUP.ATURI.as("group_aturi"),
-                            CATEGORY_GROUP.CREATED_AT.as("group_created_at"),
-                            CATEGORY_GROUP.UPDATED_AT.as("group_updated_at"),
-                            CATEGORY.ID.as("category_id"),
+                            GROUP.NAME.as("group_name"),
+                            GROUP.DESCRIPTION.as("group_description"),
+                            GROUP.ATURI.as("group_aturi"),
                             CATEGORY.NAME.as("category_name"),
-                            CATEGORY.ATURI.as("category_aturi")
-                    ).from(CATEGORY_GROUP)
-                    .leftJoin(CATEGORY).on(CATEGORY.CATEGORY_GROUP_ID.eq(CATEGORY_GROUP.ID))
-                    .orderBy(CATEGORY_GROUP.NAME.asc(), CATEGORY.NAME.asc())
+                            CATEGORY.ATURI.as("category_aturi"),
+                            CATEGORY.CATEGORY_TYPE.as("category_type"),
+                            CATEGORY.DESCRIPTION.as("category_description")
+                    ).from(GROUP)
+                    .leftJoin(CATEGORY).on(CATEGORY.GROUP.eq(GROUP.ATURI))
+                    .orderBy(GROUP.NAME.asc(), CATEGORY.NAME.asc())
                     .fetch();
 
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
-
-            // Group the results by category group
+            // Group the results by group
             var groupedData = groupsWithCategories.stream()
                     .collect(Collectors.groupingBy(
-                            record -> {
-                                OffsetDateTime createdAt = record.get("group_created_at", OffsetDateTime.class);
-                                OffsetDateTime updatedAt = record.get("group_updated_at", OffsetDateTime.class);
-
-                                return Map.of(
-                                        "name", Objects.requireNonNull(record.get("group_name")),
-                                        "description", Objects.requireNonNull(record.get("group_description")),
-                                        "aturi", Objects.requireNonNull(record.get("group_aturi")),
-                                        "created_at", createdAt.format(formatter),
-                                        "updated_at", updatedAt.format(formatter)
-                                );
-                            },
+                            record -> Map.of(
+                                    "name", Objects.requireNonNull(record.get("group_name")),
+                                    "description", Objects.requireNonNull(record.get("group_description")),
+                                    "aturi", Objects.requireNonNull(record.get("group_aturi"))
+                            ),
                             Collectors.mapping(
                                     record -> {
-                                        var categoryId = record.get("category_id");
-                                        if (categoryId != null) {
+                                        var categoryName = record.get("category_name");
+                                        if (categoryName != null) {
                                             return Map.of(
                                                     "name", Objects.requireNonNull(record.get("category_name")),
-                                                    "aturi", Objects.requireNonNull(record.get("category_aturi"))
+                                                    "aturi", Objects.requireNonNull(record.get("category_aturi")),
+                                                    "category_type", record.get("category_type") != null ? record.get("category_type") : "",
+                                                    "description", record.get("category_description") != null ? record.get("category_description") : ""
                                             );
                                         }
                                         return null;
