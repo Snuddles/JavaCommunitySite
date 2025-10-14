@@ -12,12 +12,17 @@
     --subtext-color: gray;
 
     --bkg-color: white;
+    --bkg-color-alt: #f8f8f8;
     --accent-text-color: white;
     --border-color: lightgray;
 
-    --large-text-3: 32px;
-    --large-text-2: 24px;
-    --large-text-1: 20px;
+    --large-text-1: 32px;
+    --large-text-2: 26px;
+    --large-text-3: 22px;
+    --large-text-4: 20px;
+    --large-text-5: 18px;
+    --large-text-6: 16px;
+
     --regular-text: 16px;
     --small-text: 14px;
 
@@ -27,12 +32,32 @@
 }
 
 h1 {
-    font-size: var(--large-text-3);
+    font-size: var(--large-text-1);
     font-weight: bold;
 }
 
 h2 {
     font-size: var(--large-text-2);
+    font-weight: bold;
+}
+
+h3 {
+    font-size: var(--large-text-3);
+    font-weight: bold;
+}
+
+h4 {
+    font-size: var(--large-text-4);
+    font-weight: bold;
+}
+
+h5 {
+    font-size: var(--large-text-5);
+    font-weight: bold;
+}
+
+h6 {
+    font-size: var(--large-text-6);
     font-weight: bold;
 }
 
@@ -210,7 +235,7 @@ p {
 
         & label {
             font-weight: bold;
-            font-size: var(--large-text-1);
+            font-size: var(--large-text-3);
         }
 
         & .category-select-container {
@@ -286,4 +311,14 @@ p {
     gap: 10px;
     align-items: center;
     justify-content: flex-end;
+}
+
+pre {
+    background-color: var(--bkg-color-alt);
+    padding: 10px 15px;
+    border-radius: var(--border-radius-1);
+
+    & code {
+        font-family: monospace;
+    }
 }

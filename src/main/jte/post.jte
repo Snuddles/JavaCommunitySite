@@ -1,12 +1,14 @@
 @import java.util.ArrayList
 
+@param String post
+
 @template.layout.main(
     title = "Post",
     stylesheets = new ArrayList<String>(),
     content = @`
     <div class="post-page">
         <h2>What is Springboot?</h2>
-        @template.components.opPost()
+        @template.components.opPost(post=post)
         <div class="mid-reply-runner"></div>
         @template.components.reply()
         <div class="mid-reply-runner"></div>

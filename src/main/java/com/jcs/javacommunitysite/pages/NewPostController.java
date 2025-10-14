@@ -6,7 +6,6 @@ import com.jcs.javacommunitysite.atproto.exceptions.AtprotoInvalidUri;
 import com.jcs.javacommunitysite.atproto.records.PostRecord;
 import com.jcs.javacommunitysite.atproto.service.AtprotoSessionService;
 import com.jcs.javacommunitysite.forms.NewPostForm;
-import dev.mccue.json.Json;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,11 +17,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 import static com.jcs.javacommunitysite.JavaCommunitySiteApplication.JCS_FORUM_DID;
 import static com.jcs.javacommunitysite.jooq.tables.Category.CATEGORY;
-import static com.jcs.javacommunitysite.jooq.tables.CategoryGroup.CATEGORY_GROUP;
+import static com.jcs.javacommunitysite.jooq.tables.Group.GROUP;
 
 @Controller
 public class NewPostController {
@@ -91,7 +89,7 @@ public class NewPostController {
         var categories = dsl.select(
                     CATEGORY.NAME.as("category_name"),
                     CATEGORY.ATURI.as("category_aturi")
-            ).from(CATEGORY).where(CATEGORY.CATEGORY_GROUP_ID.eq(UUID.fromString(group)))
+            ).from(CATEGORY).where(CATEGORY.GROUP.eq(group))
             .orderBy(CATEGORY.NAME.asc())
             .fetch();
 
@@ -108,17 +106,17 @@ public class NewPostController {
 
     private List<Map<String, String>> getGroups() {
         var groups = dsl.select(
-                        CATEGORY_GROUP.NAME.as("group_name"),
-                        CATEGORY_GROUP.ID.as("group_id")
-                ).from(CATEGORY_GROUP)
-                .orderBy(CATEGORY_GROUP.NAME.asc())
+                        GROUP.NAME.as("group_name"),
+                        GROUP.ATURI.as("group_aturi")
+                ).from(GROUP)
+                .orderBy(GROUP.NAME.asc())
                 .fetch();
 
 
         var categoryGroups = groups.stream()
                 .map(record -> Map.of(
                         "name", record.get("group_name").toString(),
-                        "id", record.get("group_id").toString()
+                        "id", record.get("group_aturi").toString()
                 ))
                 .toList();
 
