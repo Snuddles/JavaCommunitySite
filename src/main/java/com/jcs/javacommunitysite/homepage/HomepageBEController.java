@@ -1,16 +1,18 @@
 package com.jcs.javacommunitysite.homepage;
 
+import static com.jcs.javacommunitysite.JavaCommunitySiteApplication.JCS_FORUM_ATURI;
 import com.jcs.javacommunitysite.atproto.AtprotoClient;
 import com.jcs.javacommunitysite.atproto.service.AtprotoSessionService;
 import com.jcs.javacommunitysite.atproto.records.PostRecord;
-import dev.mccue.json.Json;
+import dev.mccue.json.*;
 import org.jooq.DSLContext;
 
 import static com.jcs.javacommunitysite.jooq.tables.Category.CATEGORY;
 import static com.jcs.javacommunitysite.jooq.tables.Group.GROUP;
+import static dev.mccue.json.JsonDecoder.object;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -41,7 +43,16 @@ public class HomepageBEController {
 
             AtprotoClient client = clientOpt.get();
 
-            PostRecord post = new PostRecord(postData);
+            Instant createdAt = Instant.now();
+            Instant updatedAt = createdAt;
+
+            Json postDataUpdated = Json.objectBuilder(object(postData))
+                .put("createdAt", createdAt.toString())
+                .put("updatedAt", updatedAt.toString())
+                .put("forum", JCS_FORUM_ATURI)
+                .build();
+
+            PostRecord post = new PostRecord(postDataUpdated);
 
             client.createRecord(post);
 

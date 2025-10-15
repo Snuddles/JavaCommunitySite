@@ -37,11 +37,9 @@ public abstract class AtprotoRecord implements JsonEncodable {
         this.ownerDid = ownerDid;
     }
 
-    public Optional<AtUri> getAtUri() {
-        if (ownerDid == null || recordKey == null) return Optional.empty();
-        return Optional.of(
-                new AtUri(ownerDid, getRecordCollection(), recordKey)
-        );
+    public AtUri getAtUri() {
+        if (ownerDid == null || recordKey == null) return null;
+        return new AtUri(ownerDid, getRecordCollection(), recordKey);
     }
 
     public void setAtUri(AtUri atUri) {

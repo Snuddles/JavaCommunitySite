@@ -3,6 +3,7 @@ package com.jcs.javacommunitysite;
 import com.jcs.javacommunitysite.atproto.jetstream.JetstreamWebsocketClient;
 import com.jcs.javacommunitysite.atproto.jetstream.handlers.*;
 import jakarta.annotation.PostConstruct;
+import org.jooq.DSLContext;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Component;
@@ -39,6 +40,12 @@ public class JavaCommunitySiteApplication {
 class JetstreamStartupComponent {
     private static JetstreamWebsocketClient jetstreamClient;
 
+    private final DSLContext dsl;
+    
+    public JetstreamStartupComponent(DSLContext dsl) {
+        this.dsl = dsl;
+    }
+
     @PostConstruct
     public void init() {
         try {
@@ -54,12 +61,12 @@ class JetstreamStartupComponent {
                     + "&wantedCollections=dev.fudgeu.experimental.atforumv1.feed.reply"
             ));
 
-            jetstreamClient.registerJetstreamHandler(addLexiconPrefix("forum.identity"), new JetstreamForumIdentityHandler());
-            jetstreamClient.registerJetstreamHandler(addLexiconPrefix("forum.group"), new JetstreamForumGroupHandler());
-            jetstreamClient.registerJetstreamHandler(addLexiconPrefix("forum.category"), new JetstreamForumCategoryHandler());
-            jetstreamClient.registerJetstreamHandler(addLexiconPrefix("feed.post"), new JetstreamPostHandler());
-            jetstreamClient.registerJetstreamHandler(addLexiconPrefix("feed.vote"), new JetstreamVoteHandler());
-            jetstreamClient.registerJetstreamHandler(addLexiconPrefix("feed.reply"), new JetstreamReplyHandler());
+            jetstreamClient.registerJetstreamHandler(addLexiconPrefix("forum.identity"), new JetstreamForumIdentityHandler(dsl));
+            jetstreamClient.registerJetstreamHandler(addLexiconPrefix("forum.group"), new JetstreamForumGroupHandler(dsl));
+            jetstreamClient.registerJetstreamHandler(addLexiconPrefix("forum.category"), new JetstreamForumCategoryHandler(dsl));
+            jetstreamClient.registerJetstreamHandler(addLexiconPrefix("feed.post"), new JetstreamPostHandler(dsl));
+            jetstreamClient.registerJetstreamHandler(addLexiconPrefix("feed.vote"), new JetstreamVoteHandler(dsl));
+            jetstreamClient.registerJetstreamHandler(addLexiconPrefix("feed.reply"), new JetstreamReplyHandler(dsl));
 
             jetstreamClient.connect();
         } catch (URISyntaxException e) {

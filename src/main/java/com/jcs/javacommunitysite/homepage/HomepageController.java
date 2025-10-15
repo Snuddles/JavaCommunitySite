@@ -1,18 +1,14 @@
 package com.jcs.javacommunitysite.homepage;
 
-import com.jcs.javacommunitysite.JavaCommunitySiteApplication;
 import com.jcs.javacommunitysite.atproto.AtprotoClient;
 import com.jcs.javacommunitysite.atproto.service.AtprotoSessionService;
 import com.jcs.javacommunitysite.atproto.records.PostRecord;
 import dev.mccue.json.Json;
 import org.jooq.DSLContext;
-import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -60,6 +56,7 @@ public class HomepageController {
                     .put("category", "")
                     .put("forum", JCS_FORUM_ATURI)
                     .put("tags", "")
+                    .put("solution", "")
                     .toJson();
 
             PostRecord post = new PostRecord(postDataJson);
