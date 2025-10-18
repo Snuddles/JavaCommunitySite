@@ -1,3 +1,7 @@
+@import com.jcs.javacommunitysite.jooq.tables.records.ReplyRecord
+
+@param ReplyRecord reply
+
 <div class="post">
     <div class="content">
         <div class="header">
@@ -9,12 +13,12 @@
                 <p class="handle">@test.com</p>
             </div>
             <div class="time-info">
-                Posted 2 hours ago
+                ${reply.getCreatedAt().toString()}
             </div>
         </div>
         <div class="body">
             <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed scelerisque sodales leo vel pretium. Pellentesque nec quam mi. Suspendisse sagittis ultricies lacus nec sollicitudin. Phasellus congue lacus eu odio egestas viverra. Etiam facilisis sem luctus malesuada rhoncus. Suspendisse eu purus aliquam, efficitur ante et, maximus tortor. Aliquam sed sem ac neque lacinia blandit. Nulla vel lobortis velit. Suspendisse potenti.
+                $unsafe{reply.getContent().toString()}
             </p>
         </div>
     </div>

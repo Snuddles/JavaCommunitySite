@@ -1,8 +1,5 @@
-@import java.util.ArrayList
-
 @template.layout.main(
 title = "New Posts",
-stylesheets = new ArrayList<String>(),
 content = @`
     <div class="ml-4 mr-4 flex-1 p-6 min-h-svh">
         <div class="flex flex-row justify-between">

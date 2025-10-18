@@ -1,5 +1,4 @@
 @import com.jcs.javacommunitysite.forms.NewPostForm
-@import java.util.ArrayList
 @import java.util.List
 @import java.util.Map
 
@@ -8,7 +7,6 @@
 
 @template.layout.main(
     title = "New Post",
-    stylesheets = new ArrayList<String>(),
     content = @`
     <div class="new-post-page">
         <h1>New Post</h1>

@@ -6,19 +6,22 @@ import com.jcs.javacommunitysite.atproto.records.PostRecord;
 import com.jcs.javacommunitysite.atproto.records.ReplyRecord;
 import com.jcs.javacommunitysite.atproto.service.AtprotoSessionService;
 import com.jcs.javacommunitysite.forms.NewReplyForm;
+import jakarta.servlet.http.HttpServletResponse;
 import org.commonmark.node.AbstractVisitor;
 import org.commonmark.node.Node;
 import org.commonmark.node.Heading;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.jooq.DSLContext;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.time.OffsetDateTime;
-import java.util.List;
+import java.time.ZoneOffset;
 import java.util.Map;
 
 import static com.jcs.javacommunitysite.jooq.tables.Post.POST;
@@ -56,27 +59,17 @@ public class PostController {
         }
 
         // Get replies
-        List<Map<String, Object>> postReplies = null;
+        com.jcs.javacommunitysite.jooq.tables.records.ReplyRecord[] postReplies = null;
         try {
-            postReplies = dsl.select()
-                    .from(REPLY)
+            postReplies = dsl.selectFrom(REPLY)
                     .where(REPLY.ROOT.eq(aturi.toString()))
-                    .orderBy(REPLY.CREATED_AT.desc())
-                    .fetchMaps();
+                    .orderBy(REPLY.CREATED_AT.asc())
+                    .fetchArray();
         } catch (Exception e) {
             // TODO
+            return "";
         }
 
-//        Map<String, Object> postMap = new HashMap<>();
-//        postMap.put("atUri", post.get("aturi"));
-//        postMap.put("title", post.get("title"));
-//        postMap.put("content", post.get("content"));
-//        postMap.put("createdAt", String.valueOf(post.get("created_at")));
-//        postMap.put("updatedAt", post.get("updated_at") != null ? String.valueOf(post.get("updated_at")) : null);
-//        postMap.put("tags", post.get("tags"));
-//        postMap.put("category_aturi", post.get("category_aturi"));
-
-//        String exampleText = "# Test \n This is a test post \n ```java\nSystem.out.println(\"Hello World!\");\n``` \n ## Test 2 \n ### Test 3 \n - lol \n - [x] lol x2 \n #### Test 4 \n testinggggg";
         Parser parser = Parser.builder().build();
         Node document = parser.parse((String) post.get("content"));
 
@@ -102,27 +95,45 @@ public class PostController {
 
         model.addAttribute("postReplies", postReplies);
 
-        return "post";
+        return "pages/post/page";
     }
 
     @PostMapping("/post/{user}/{rkey}/htmx/reply")
-    public String makeReply(@ModelAttribute NewReplyForm newReplyForm, Model model, @PathVariable("user") String user, @PathVariable("rkey") String rkey, @RequestParam String content) throws AtprotoUnauthorized, IOException {
+    public String makeReply(
+            @ModelAttribute NewReplyForm newReplyForm,
+            Model model,
+            HttpServletResponse response,
+            @PathVariable("user") String user,
+            @PathVariable("rkey") String rkey
+    ) {
         AtUri aturi = new AtUri(user, PostRecord.recordCollection, rkey);
 
         var atprotoSessionOpt = sessionService.getCurrentClient();
         if (atprotoSessionOpt.isEmpty() || !sessionService.isAuthenticated()) {
-            // TODO
-            return "redirect:/login?next=/post/" + user + "/" + rkey + "/&msg=To reply to a post, please log in.";
+            response.setHeader("HX-Redirect", "/login?next=/post/" + user + "/" + rkey + "&msg=To reply to a post, please log in.");
+            return "";
         }
         var atprotoSession = atprotoSessionOpt.get();
 
+        ReplyRecord reply = null;
+        try {
+            reply = new ReplyRecord(
+                newReplyForm.getContent(),
+                aturi
+            );
+            atprotoSession.createRecord(reply);
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return "pages/post/htmx/replyError";
+            // TODO make the errors better
+        }
 
-        ReplyRecord reply = new ReplyRecord(
-            newReplyForm.getContent(),
-            aturi
-        );
+        // Create a fake reply record to insert into the browser
+        var fakeReply = new com.jcs.javacommunitysite.jooq.tables.records.ReplyRecord();
+        fakeReply.setContent(reply.getContent());
+        fakeReply.setCreatedAt(reply.getCreatedAt().atOffset(ZoneOffset.UTC));
+        model.addAttribute("reply", fakeReply);
 
-        atprotoSession.createRecord(reply);
-        return "redirect:/browse";
+        return "pages/post/htmx/reply";
     }
 }

@@ -1,6 +1,5 @@
 @param gg.jte.Content content
 @param String title
-@param java.util.List<String> stylesheets
 
 <!doctype html>
 <html lang="en">
@@ -9,14 +8,11 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>${title}</title>
+    <title>${title} | JCS</title>
     <link rel="stylesheet" href="/main.css" />
     <link rel="stylesheet" href="/root.css" />
-    @for(String stylesheet : stylesheets)
-        <link rel="stylesheet" href="${stylesheet}" />
-    @endfor
     <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.7/dist/htmx.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/htmx-ext-response-targets@2.0.2" integrity="sha384-T41oglUPvXLGBVyRdZsVRxNWnOOqCynaPubjUVjxhsjFTKrFJGEMm3/0KGmNQ+Pg" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/htmx-ext-response-targets@2.0.2"></script>
 </head>
 <body class="flex flex-row bg-white" hx-ext="response-targets">
 <div class="w-60 flex-initial p-4 flex-col border-r-solid border-r-1 border-r-black min-h-svh">

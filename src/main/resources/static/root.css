@@ -133,6 +133,7 @@ p {
             display: flex;
             justify-content: flex-end;
             align-items: center;
+            gap: 10px;
         }
 
         & .runner {
@@ -281,9 +282,14 @@ p {
     user-select: none;
     transition: background-color 80ms;
 
-    &:hover {
+    &:hover:not(:disabled) {
         cursor: pointer;
+        filter: brightness(1.15);
+    }
 
+    &:disabled {
+        cursor: not-allowed;
+        background-color: lightgray;
     }
 }
 
