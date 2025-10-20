@@ -2,12 +2,12 @@
 Write-Host "Loading project environment variables..."
 
 # Start in the current directory and search upwards for the .env file
-$currentDir = Get-Location
-$envFile = Join-Path $currentDir.Path ".env"
+$currentDir = Get-Location | Select-Object -ExpandProperty Path
+$envFile = Join-Path $currentDir ".env"
 
-while (-not (Test-Path $envFile) -and $currentDir.Path -ne $currentDir.Root) {
-    $currentDir = Split-Path $currentDir.Path -Parent
-    $envFile = Join-Path $currentDir.Path ".env"
+while (-not (Test-Path $envFile) -and $currentDir -ne (Get-Item $currentDir).Root) {
+    $currentDir = Split-Path $currentDir -Parent
+    $envFile = Join-Path $currentDir ".env"
 }
 
 if (Test-Path $envFile) {
