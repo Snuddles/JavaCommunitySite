@@ -1,6 +1,6 @@
 @param String category
 
-@template.layout.main(content = @`
+@template.layout.main(title = category, content = @`
     <div class="ml-4 mr-4 flex-1 p-6 min-h-svh">
         <div class="flex flex-row justify-between">
             <div class="flex flex-col w-90">

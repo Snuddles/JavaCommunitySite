@@ -1,5 +1,5 @@
 package com.jcs.javacommunitysite.pages;
-import com.jcs.javacommunitysite.homepage.HomepageController; // fix the package
+import com.jcs.javacommunitysite.pages.homepage.HomepageController; // fix the package
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
