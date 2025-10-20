@@ -1,5 +1,5 @@
 package com.jcs.javacommunitysite.pages;
-
+import com.jcs.javacommunitysite.homepage.HomepageController; // fix the package
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -7,8 +7,17 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @Controller
 public class PageController {
+
+    private final HomepageController hpc; // or a Service, ideally
+
+    public PageController(HomepageController homepageController) {
+        this.hpc = homepageController;
+    }
+
     @GetMapping("/browse")
-    public String home() {
+    public String home(Model model) {
+
+        model.addAttribute("group", hpc.getGroupsCategories());
         return "pages/browse";
     }
 
@@ -39,6 +48,7 @@ public class PageController {
 
     @GetMapping("/topics/{category}/{topic}")
     public String topicPage(@PathVariable String category, @PathVariable String topic, Model model) {
+        // all the actual data from the db
         category = category.replaceAll("_", " ");
         category = toTitleCase(category);
         model.addAttribute("category", category);

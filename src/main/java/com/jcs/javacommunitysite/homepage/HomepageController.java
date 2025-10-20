@@ -9,11 +9,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import static ch.qos.logback.core.joran.JoranConstants.NULL;
 import static com.jcs.javacommunitysite.jooq.tables.Category.CATEGORY;
 import static com.jcs.javacommunitysite.jooq.tables.Group.GROUP;
 import static com.jcs.javacommunitysite.JavaCommunitySiteApplication.JCS_FORUM_ATURI;
@@ -69,13 +68,12 @@ public class HomepageController {
         }
     }
 
-    @GetMapping("/posts")
-    public String getGroupsCategories(Model model) {
+    public List<Map<String, Object>> getGroupsCategories() {
 
         try {
             Optional<AtprotoClient> clientOpt = sessionService.getCurrentClient();
             if (clientOpt.isEmpty()) {
-                return "error not authenticated";
+                return Collections.emptyList();
             }
 
             // Fetch all groups with their categories
@@ -121,7 +119,7 @@ public class HomepageController {
                     ));
 
             // Convert to a more structured format
-            var result = groupedData.entrySet().stream()
+            return groupedData.entrySet().stream()
                     .map(entry -> {
                         var group = entry.getKey();
                         var categories = entry.getValue();
@@ -132,10 +130,8 @@ public class HomepageController {
                     })
                     .toList();
 
-            return "group/category template";
-
         } catch (Exception e){
-            return "error";
+            return Collections.emptyList();
         }
     }
 }
