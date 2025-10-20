@@ -17,6 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Map;
@@ -36,7 +37,7 @@ public class PostPageController {
     }
 
     @GetMapping("/post/{userDid}/{postRKey}")
-    public String getPostReplies(Model model, @PathVariable("userDid") String userDid, @PathVariable("postRKey") String postRKey) {
+    public String getPost(Model model, @PathVariable("userDid") String userDid, @PathVariable("postRKey") String postRKey) {
 
         AtUri aturi = new AtUri(userDid, PostRecord.recordCollection, postRKey);
 
@@ -48,7 +49,7 @@ public class PostPageController {
                     .fetchOneMap();
 
             if (post == null) {
-                // TODO return 404 page
+                return ""; // TODO return 404
             }
         } catch (Exception e) {
             return ""; // TODO
@@ -82,8 +83,7 @@ public class PostPageController {
         HtmlRenderer renderer = HtmlRenderer.builder().build();
         String contentHtml = renderer.render(document);
 
-        model.addAttribute("did", userDid);
-        model.addAttribute("rkey", postRKey);
+        model.addAttribute("aturi", aturi);
         model.addAttribute("title", post.get("title"));
         model.addAttribute("postContent", contentHtml);
         model.addAttribute("postTimestamp", ((OffsetDateTime) post.get("created_at")).toString());
@@ -242,7 +242,7 @@ public class PostPageController {
     }
     */
 
-    @DeleteMapping("/post/{userDid}/{postRKey}")
+    @DeleteMapping("/post/{userDid}/{postRKey}/htmx/deletePost")
     public String deletePost(Model model,
                              HttpServletResponse response,
                              @PathVariable("userDid") String userDid,
@@ -250,7 +250,7 @@ public class PostPageController {
         try{
             var clientOpt = sessionService.getCurrentClient();
             if (clientOpt.isEmpty() || !sessionService.isAuthenticated()) {
-                return "not logged in";
+                response.setHeader("HX-Redirect", "/login?next=/post/" + userDid + "/" + postRKey + "&msg=To delete a post, please log in.");
             }
 
             AtprotoClient client = clientOpt.get();
@@ -258,10 +258,49 @@ public class PostPageController {
             PostRecord post = new PostRecord(postAtUri);
             client.deleteRecord(post);
 
-            return "template";
+            response.setHeader("HX-Redirect", "/browse");
+            return "";
 
         } catch (Exception e) {
-            return "error";
+            response.setStatus(500);
+            model.addAttribute("toastMsg", "An error occurred while trying to delete the post. Please try again later.");
+            return "components/errorToast";
         }
+    }
+
+    @GetMapping("/post/{userDid}/{postRKey}/htmx/postMenu")
+    public String getPostMenu(Model model,
+                              HttpServletResponse response,
+                              @PathVariable("userDid") String userDid,
+                              @PathVariable("postRKey") String postRKey) throws IOException {
+        var clientOpt = sessionService.getCurrentClient();
+        if (clientOpt.isEmpty() || !sessionService.isAuthenticated()) {
+            response.setHeader("HX-Redirect", "/login?next=/post/" + userDid + "/" + postRKey + "&msg=To edit a post, please log in.");
+            return "";
+        }
+        var client = clientOpt.get();
+
+        boolean ownsThisPost = client.isSameUser(userDid);
+
+        model.addAttribute("ownsThisPost", ownsThisPost);
+        model.addAttribute("aturi", new AtUri(userDid, PostRecord.recordCollection, postRKey));
+
+        return "pages/post/htmx/postPopupMenu";
+    }
+
+    @GetMapping("/post/{userDid}/{postRKey}/htmx/confirmDeletePost")
+    public String getConfirmDeletePost(Model model,
+                                       HttpServletResponse response,
+                                       @PathVariable("userDid") String userDid,
+                                       @PathVariable("postRKey") String postRKey) {
+        var clientOpt = sessionService.getCurrentClient();
+        if (clientOpt.isEmpty() || !sessionService.isAuthenticated()) {
+            response.setHeader("HX-Redirect", "/login?next=/post/" + userDid + "/" + postRKey + "&msg=To delete a post, please log in.");
+            return "";
+        }
+
+        model.addAttribute("aturi", new AtUri(userDid, PostRecord.recordCollection, postRKey));
+
+        return "pages/post/htmx/confirmDeletePostModal";
     }
 }

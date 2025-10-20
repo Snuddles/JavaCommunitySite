@@ -44,7 +44,7 @@ public class JetstreamPostHandler implements JetstreamHandler {
             .set(POST.TITLE, field(postJson, "title", string()))
             .set(POST.CONTENT, field(postJson, "content", string()))
             .set(POST.CREATED_AT, record.getCreatedAt().atOffset(ZoneOffset.UTC))
-            .set(POST.UPDATED_AT, record.getUpdatedAt().atOffset(ZoneOffset.UTC))
+            .set(POST.UPDATED_AT, record.getUpdatedAt() != null ? record.getUpdatedAt().atOffset(ZoneOffset.UTC) : null)
             .set(POST.CATEGORY_ATURI, field(postJson, "category", string()))
             .set(POST.FORUM, field(postJson, "forum", string()))
             .set(POST.TAGS, JSONB.valueOf(field(postJson, "tags", Json::of).toString()))

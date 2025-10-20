@@ -1,8 +1,8 @@
+@import com.jcs.javacommunitysite.atproto.AtUri
 @import com.jcs.javacommunitysite.forms.NewReplyForm
 @import com.jcs.javacommunitysite.jooq.tables.records.ReplyRecord
 
-@param String did
-@param String rkey
+@param AtUri aturi
 
 @param String title
 @param String postContent
@@ -17,7 +17,7 @@ title = title,
 content = @`
     <div class="post-page">
         <h2>${title}</h2>
-        @template.pages.post.components.opPost(content=postContent, username="Test", handle="test.bsky.social", timestamp=postTimestamp)
+        @template.pages.post.components.opPost(content=postContent, username="Test", handle="test.bsky.social", timestamp=postTimestamp, aturi=aturi)
 
         @for(var reply : postReplies)
             <div class="mid-reply-runner"></div>
@@ -28,7 +28,7 @@ content = @`
 
         <form
             class="reply-container"
-            hx-post="/post/${did}/${rkey}/htmx/reply"
+            hx-post="/post/${aturi.getDid()}/${aturi.getRecordKey()}/htmx/reply"
             hx-target="#new-reply-insert-point"
             hx-target-error="#reply-error-container"
             hx-swap="outerHTML"

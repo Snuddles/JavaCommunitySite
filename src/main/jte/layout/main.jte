@@ -95,4 +95,9 @@
     </div>
 </div>
 </body>
+<script>
+    document.addEventListener("click", () => {
+        document.getElementById("popup-menu")?.remove()
+    })
+</script>
 </html>

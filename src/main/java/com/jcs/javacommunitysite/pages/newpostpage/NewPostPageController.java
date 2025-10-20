@@ -56,6 +56,7 @@ public class NewPostPageController {
             AtprotoClient client = clientOpt.get();
 
             // Attempt to make aturi from category
+            System.out.println(newPostForm.getCategory());
             AtUri categoryAtUri = new AtUri(newPostForm.getCategory());
 
             PostRecord post = new PostRecord(
@@ -70,7 +71,6 @@ public class NewPostPageController {
             return "redirect:/browse";
 
         } catch (AtprotoInvalidUri e) {
-            System.out.println(e);
             model.addAttribute("error", "Invalid category - please select another one"); // TODO implement errors
             model.addAttribute("groups", getGroups());
             model.addAttribute("postForm", newPostForm);

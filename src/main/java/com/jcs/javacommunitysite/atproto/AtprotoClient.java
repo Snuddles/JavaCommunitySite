@@ -110,4 +110,20 @@ public class AtprotoClient {
             return field(json, "did", string());
         }
     }
+
+    public AtprotoAuthSession getSession() {
+        return session;
+    }
+
+    public boolean isSameUser(String didOrHandle) throws IOException {
+        String did = didOrHandle;
+        if (!didOrHandle.startsWith("did:")) {
+            resolveDidFromHandle(didOrHandle);
+        }
+
+        String sessionDid = resolveDidFromHandle(session.getHandle());
+
+        return did.equals(sessionDid);
+
+    }
 }
