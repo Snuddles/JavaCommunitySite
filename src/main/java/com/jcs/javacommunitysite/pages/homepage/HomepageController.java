@@ -3,12 +3,9 @@ package com.jcs.javacommunitysite.pages.homepage;
 import com.jcs.javacommunitysite.atproto.AtprotoClient;
 import com.jcs.javacommunitysite.atproto.service.AtprotoSessionService;
 import org.jooq.DSLContext;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.jcs.javacommunitysite.jooq.tables.Category.CATEGORY;
@@ -26,12 +23,12 @@ public class HomepageController {
     }
 
     @GetMapping("/groups/categories")
-    public String getGroupsCategories(Model model) {
+    public List<Map<String, Object>> getGroupsCategories() {
 
         try {
             Optional<AtprotoClient> clientOpt = sessionService.getCurrentClient();
             if (clientOpt.isEmpty()) {
-                return "error not authenticated";
+                return Collections.emptyList();
             }
 
             // Fetch all groups with their categories
@@ -77,7 +74,7 @@ public class HomepageController {
                     ));
 
             // Convert to a more structured format
-            var result = groupedData.entrySet().stream()
+            return groupedData.entrySet().stream()
                     .map(entry -> {
                         var group = entry.getKey();
                         var categories = entry.getValue();
@@ -88,10 +85,8 @@ public class HomepageController {
                     })
                     .toList();
 
-            return "group/category template";
-
         } catch (Exception e){
-            return "error";
+            return Collections.emptyList();
         }
     }
 }

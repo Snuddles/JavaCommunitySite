@@ -13,7 +13,7 @@ import static com.jcs.javacommunitysite.atproto.AtprotoUtil.getPdsHostFromHandle
 
 @Controller
 public class UserAuthController {
-    
+
     private final AtprotoSessionService sessionService;
 
     public UserAuthController(AtprotoSessionService sessionService) {
@@ -49,6 +49,7 @@ public class UserAuthController {
         try {
             String handle = loginForm.getHandle();
             String password = loginForm.getPassword();
+
             String pdsHost = getPdsHostFromHandle(handle);
 
             sessionService.createSession(pdsHost, handle, password);
@@ -57,7 +58,7 @@ public class UserAuthController {
             if (next != null && !next.isBlank()) {
                 return "redirect:" + next;
             } else {
-                return "redirect:/";
+                return "redirect:/browse";
             }
 
         } catch (AtprotoUnauthorized e) {
@@ -72,7 +73,7 @@ public class UserAuthController {
         }
         return "login";
     }
-    
+
     @PostMapping("/logout")
     public String logout(Model model) {
         if (sessionService.isAuthenticated()) {
