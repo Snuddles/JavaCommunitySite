@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -36,7 +37,8 @@ public class AtprotoClient {
         payload.put("repo", session.getHandle());
         payload.put("collection", record.getRecordCollection());
 
-        URL url = new URL(new URL(session.getPdsHost()), "/xrpc/com.atproto.repo.createRecord");
+        URI uri = URI.create(session.getPdsHost()).resolve("/xrpc/com.atproto.repo.createRecord");
+        URL url = uri.toURL();
 
         Map<String, String> headers = new HashMap<>();
         headers.putAll(session.getAuthHeaders());
@@ -67,7 +69,8 @@ public class AtprotoClient {
         payload.put("collection", record.getRecordCollection());
         payload.put("rkey", record.getRecordKey().orElseThrow());
 
-        URL url = new URL(new URL(session.getPdsHost()), "/xrpc/com.atproto.repo.putRecord");
+        URI uri = URI.create(session.getPdsHost()).resolve("/xrpc/com.atproto.repo.putRecord");
+        URL url = uri.toURL();
 
         Map<String, String> headers = new HashMap<>();
         headers.putAll(session.getAuthHeaders());
@@ -89,7 +92,8 @@ public class AtprotoClient {
         payload.put("collection", record.getRecordCollection());
         payload.put("rkey", record.getRecordKey().orElseThrow());
 
-        URL url = new URL(new URL(session.getPdsHost()), "/xrpc/com.atproto.repo.deleteRecord");
+        URI uri = URI.create(session.getPdsHost()).resolve("/xrpc/com.atproto.repo.deleteRecord");
+        URL url = uri.toURL();
 
         Map<String, String> headers = new HashMap<>();
         headers.putAll(session.getAuthHeaders());
@@ -99,11 +103,13 @@ public class AtprotoClient {
     }
 
     String resolveDidFromHandle(String handle) throws IOException {
-        String url = "https://bsky.social/xrpc/com.atproto.identity.resolveHandle?handle=" + URLEncoder.encode(handle, StandardCharsets.UTF_8);
-        
-        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+        URI uri = URI.create("https://bsky.social").resolve("/xrpc/com.atproto.identity.resolveHandle?handle=" + URLEncoder.encode(handle, StandardCharsets.UTF_8));
+
+        // Open connection
+        HttpURLConnection conn = (HttpURLConnection) uri.toURL().openConnection();
         conn.setRequestMethod("GET");
 
+        // Read response
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
             String response = reader.lines().collect(Collectors.joining());
             JsonObject json = (JsonObject) Json.readString(response);

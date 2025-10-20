@@ -5,6 +5,7 @@ import com.jcs.javacommunitysite.atproto.exceptions.AtprotoUnauthorized;
 import dev.mccue.json.JsonObject;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +26,9 @@ public class AtprotoJwtSession implements AtprotoAuthSession {
         payload.put("password", password);
 
         // Create URL and headers
-        URL url = new URL(new URL(pdsHost), "/xrpc/com.atproto.server.createSession/");
+        URI uri = URI.create(pdsHost).resolve("/xrpc/com.atproto.server.createSession/");
+        URL url = uri.toURL();
+
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/json");
 

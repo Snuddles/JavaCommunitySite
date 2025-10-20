@@ -8,7 +8,7 @@ import dev.mccue.json.JsonEncodable;
 import static com.jcs.javacommunitysite.JavaCommunitySiteApplication.addLexiconPrefix;
 import static dev.mccue.json.JsonDecoder.*;
 
-public class ForumCategoryRecord extends AtprotoRecord implements JsonEncodable {
+public class ForumCategoryRecord extends AtprotoRecord {
 
 
     public enum ForumCategoryType implements JsonEncodable {

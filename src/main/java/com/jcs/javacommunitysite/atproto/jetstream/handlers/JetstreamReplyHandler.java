@@ -2,7 +2,6 @@ package com.jcs.javacommunitysite.atproto.jetstream.handlers;
 
 import java.time.ZoneOffset;
 import org.jooq.DSLContext;
-import org.jooq.JSONB;
 import com.jcs.javacommunitysite.atproto.AtUri;
 import com.jcs.javacommunitysite.atproto.jetstream.JetstreamHandler;
 import com.jcs.javacommunitysite.atproto.records.ReplyRecord;

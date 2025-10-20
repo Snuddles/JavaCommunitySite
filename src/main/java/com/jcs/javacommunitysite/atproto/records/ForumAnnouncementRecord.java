@@ -3,7 +3,6 @@ package com.jcs.javacommunitysite.atproto.records;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.jcs.javacommunitysite.atproto.AtUri;
 import dev.mccue.json.Json;
-import dev.mccue.json.JsonEncodable;
 
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -12,7 +11,7 @@ import static com.jcs.javacommunitysite.JavaCommunitySiteApplication.addLexiconP
 import static dev.mccue.json.JsonDecoder.field;
 import static dev.mccue.json.JsonDecoder.string;
 
-public class ForumAnnouncementRecord extends AtprotoRecord implements JsonEncodable {
+public class ForumAnnouncementRecord extends AtprotoRecord {
     private String title;
     private String body;
     private Instant createdAt;
