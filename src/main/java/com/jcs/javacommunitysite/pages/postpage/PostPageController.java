@@ -2,10 +2,13 @@ package com.jcs.javacommunitysite.pages.postpage;
 
 import com.jcs.javacommunitysite.atproto.AtUri;
 import com.jcs.javacommunitysite.atproto.AtprotoClient;
+import com.jcs.javacommunitysite.forms.UpdatePostForm;
+import com.jcs.javacommunitysite.atproto.exceptions.AtprotoUnauthorized;
 import com.jcs.javacommunitysite.atproto.records.PostRecord;
 import com.jcs.javacommunitysite.atproto.records.ReplyRecord;
 import com.jcs.javacommunitysite.atproto.service.AtprotoSessionService;
 import com.jcs.javacommunitysite.forms.NewReplyForm;
+import dev.mccue.json.Json;
 import jakarta.servlet.http.HttpServletResponse;
 import org.commonmark.node.AbstractVisitor;
 import org.commonmark.node.Node;
@@ -18,6 +21,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Map;
@@ -42,11 +46,11 @@ public class PostPageController {
         AtUri aturi = new AtUri(userDid, PostRecord.recordCollection, postRKey);
 
         // Get post
-        Map<String, Object> post;
+        com.jcs.javacommunitysite.jooq.tables.records.PostRecord post;
         try {
             post = dsl.selectFrom(POST)
                     .where(POST.ATURI.eq(aturi.toString()))
-                    .fetchOneMap();
+                    .fetchAny();
 
             if (post == null) {
                 return ""; // TODO return 404
@@ -67,28 +71,24 @@ public class PostPageController {
             return "";
         }
 
-        Parser parser = Parser.builder().build();
-        Node document = parser.parse((String) post.get("content"));
+//        Parser parser = Parser.builder().build();
+//        Node document = parser.parse((String) post.get("content"));
+//
+//        document.accept(new AbstractVisitor() {
+//            @Override
+//            public void visit(Heading heading) {
+//                int newLevel = Math.min(heading.getLevel() + 2, 6);
+//                heading.setLevel(newLevel);
+//                visitChildren(heading);
+//            }
+//        });
 
-        document.accept(new AbstractVisitor() {
-            @Override
-            public void visit(Heading heading) {
-                int newLevel = Math.min(heading.getLevel() + 2, 6);
-                heading.setLevel(newLevel);
-                visitChildren(heading);
-            }
-        });
 
+//        HtmlRenderer renderer = HtmlRenderer.builder().build();
+//        String contentHtml = renderer.render(document);
 
-        HtmlRenderer renderer = HtmlRenderer.builder().build();
-        String contentHtml = renderer.render(document);
-
-        model.addAttribute("aturi", aturi);
-        model.addAttribute("title", post.get("title"));
-        model.addAttribute("postContent", contentHtml);
-        model.addAttribute("postTimestamp", ((OffsetDateTime) post.get("created_at")).toString());
+        model.addAttribute("post", post);
         model.addAttribute("newReplyForm", new NewReplyForm());
-
         model.addAttribute("postReplies", postReplies);
 
         return "pages/post/page";
@@ -124,6 +124,7 @@ public class PostPageController {
 
         // Create a fake reply record to insert into the browser
         var fakeReply = new com.jcs.javacommunitysite.jooq.tables.records.ReplyRecord();
+        fakeReply.setRoot(rootAturi.toString());
         fakeReply.setContent(reply.getContent());
         fakeReply.setCreatedAt(reply.getCreatedAt().atOffset(ZoneOffset.UTC));
         model.addAttribute("reply", fakeReply);
@@ -177,26 +178,31 @@ public class PostPageController {
     }
     */
 
-    @DeleteMapping("/post/{userDid}/{replyRKey}")
+    @DeleteMapping("/post/{userDid}/{postRKey}/htmx/deleteReply")
     public String deleteReply(Model model,
                               HttpServletResponse response,
                               @PathVariable("userDid") String userDid,
-                              @PathVariable("replyRKey") String replyRKey) {
+                              @PathVariable("postRKey") String postRKey,
+                              @RequestParam("reply") String reply) {
         try{
             var clientOpt = sessionService.getCurrentClient();
             if (clientOpt.isEmpty() || !sessionService.isAuthenticated()) {
-                return "not logged in";
+                response.setHeader("HX-Redirect", "/login?next=/post/" + userDid + "/" + postRKey + "&msg=To delete a reply, please log in.");
             }
 
             AtprotoClient client = clientOpt.get();
-            AtUri replyAtUri = new AtUri(userDid, ReplyRecord.recordCollection, replyRKey);
-            ReplyRecord reply = new ReplyRecord(replyAtUri);
-            client.deleteRecord(reply);
+            AtUri replyAtUri = new AtUri(reply);
+            ReplyRecord replyRecord = new ReplyRecord(replyAtUri);
+            client.deleteRecord(replyRecord);
 
-            return "template";
+            response.setHeader("HX-Reswap", "delete");
+            response.setHeader("HX-Trigger", "success");
+            return "empty";
 
         } catch (Exception e) {
-            return "error";
+            response.setStatus(500);
+            model.addAttribute("toastMsg", "An error occurred while trying to delete the reply. Please try again later.");
+            return "components/errorToast";
         }
     }
 
@@ -288,6 +294,31 @@ public class PostPageController {
         return "pages/post/htmx/postPopupMenu";
     }
 
+    @GetMapping("/post/{userDid}/{postRKey}/htmx/replyMenu")
+    public String getReplyMenu(Model model,
+                               HttpServletResponse response,
+                               @PathVariable("userDid") String userDid,
+                               @PathVariable("postRKey") String postRKey,
+                               @RequestParam("reply") String reply) throws IOException {
+        var clientOpt = sessionService.getCurrentClient();
+        if (clientOpt.isEmpty() || !sessionService.isAuthenticated()) {
+            response.setHeader("HX-Redirect", "/login?next=/post/" + userDid + "/" + postRKey + "&msg=To edit a reply, please log in.");
+            return "";
+        }
+        var client = clientOpt.get();
+
+        var postAtUri = new AtUri(userDid, PostRecord.recordCollection, postRKey);
+        var replyAtUri = new AtUri(reply);
+
+        boolean ownsThisReply = client.isSameUser(replyAtUri.getDid());
+
+        model.addAttribute("ownsThisReply", ownsThisReply);
+        model.addAttribute("post", postAtUri);
+        model.addAttribute("reply", replyAtUri);
+
+        return "pages/post/htmx/replyPopupMenu";
+    }
+
     @GetMapping("/post/{userDid}/{postRKey}/htmx/confirmDeletePost")
     public String getConfirmDeletePost(Model model,
                                        HttpServletResponse response,
@@ -303,4 +334,204 @@ public class PostPageController {
 
         return "pages/post/htmx/confirmDeletePostModal";
     }
+
+    @GetMapping("/post/{userDid}/{postRKey}/htmx/confirmDeleteReply")
+    public String getConfirmDeleteReply(Model model,
+                                        HttpServletResponse response,
+                                        @PathVariable("userDid") String userDid,
+                                        @PathVariable("postRKey") String postRKey,
+                                        @RequestParam("reply") String reply) {
+        var clientOpt = sessionService.getCurrentClient();
+        if (clientOpt.isEmpty() || !sessionService.isAuthenticated()) {
+            response.setHeader("HX-Redirect", "/login?next=/post/" + userDid + "/" + postRKey + "&msg=To delete a reply, please log in.");
+            return "empty";
+        }
+
+        var postAtUri = new AtUri(userDid, PostRecord.recordCollection, postRKey);
+        var replyAtUri = new AtUri(reply);
+
+        model.addAttribute("post", postAtUri);
+        model.addAttribute("reply", replyAtUri);
+
+        return "pages/post/htmx/confirmDeleteReplyModal";
+    }
+
+    @GetMapping("/post/{userDid}/{postRKey}/htmx/openEditReply")
+    public String getOpenEditReply(Model model,
+                                   HttpServletResponse response,
+                                   @PathVariable("userDid") String userDid,
+                                   @PathVariable("postRKey") String postRKey,
+                                   @RequestParam("reply") String reply) {
+        var clientOpt = sessionService.getCurrentClient();
+        if (clientOpt.isEmpty() || !sessionService.isAuthenticated()) {
+            response.setHeader("HX-Redirect", "/login?next=/post/" + userDid + "/" + postRKey + "&msg=To edit a reply, please log in.");
+            return "empty";
+        }
+
+        try {
+            var replyRecord = dsl.selectFrom(REPLY)
+                    .where(REPLY.ATURI.eq(reply))
+                    .fetchAny();
+
+            var form = new NewReplyForm();
+            form.setContent(replyRecord.getContent());
+            model.addAttribute("form", form);
+            model.addAttribute("reply", replyRecord);
+
+            return "pages/post/htmx/replyEditor";
+        } catch (Exception e) {
+            // TODO
+            return "";
+        }
+    }
+
+    @PutMapping("/post/{userDid}/{postRKey}/htmx/editReply")
+    public String editReply(Model model,
+                            HttpServletResponse response,
+                            @ModelAttribute NewReplyForm newReplyForm,
+                            @PathVariable("userDid") String userDid,
+                            @PathVariable("postRKey") String postRKey,
+                            @RequestParam("reply") String reply) throws AtprotoUnauthorized, IOException {
+        var clientOpt = sessionService.getCurrentClient();
+        if (clientOpt.isEmpty() || !sessionService.isAuthenticated()) {
+            response.setHeader("HX-Redirect", "/login?next=/post/" + userDid + "/" + postRKey + "&msg=To edit a reply, please log in.");
+            return "empty";
+        }
+
+        AtprotoClient client = clientOpt.get();
+
+        AtUri replyAtUri = new AtUri(reply);
+
+        // Fetch current reply from database using the DSLContext constructor
+        ReplyRecord currentReply = new ReplyRecord(replyAtUri, dsl);
+
+        if (currentReply.getContent() == null) {
+            return "empty"; // TODO error
+        }
+
+        // Build updated reply data
+        Json replyDataUpdated = Json.objectBuilder()
+                .put("content", newReplyForm.getContent())
+                .put("createdAt", currentReply.getCreatedAt().toString())
+                .put("updatedAt", Instant.now().toString())
+                .put("root", currentReply.getRoot())
+                .build();
+
+        ReplyRecord updatedReply = new ReplyRecord(replyDataUpdated);
+        updatedReply.setAtUri(replyAtUri);
+
+        client.updateRecord(updatedReply);
+
+        var newReply = new com.jcs.javacommunitysite.jooq.tables.records.ReplyRecord();
+        newReply.setAturi(updatedReply.getAtUri().toString());
+        newReply.setRoot(updatedReply.getRoot().toString());
+        newReply.setContent(updatedReply.getContent());
+        newReply.setCreatedAt(updatedReply.getCreatedAt().atOffset(ZoneOffset.UTC));
+        newReply.setUpdatedAt(updatedReply.getUpdatedAt().atOffset(ZoneOffset.UTC));
+
+        model.addAttribute("reply", newReply);
+        return "pages/post/components/reply";
+    }
+
+    @GetMapping("/post/{userDid}/{postRKey}/htmx/cancelEditReply")
+    public String cancelEditReply(Model model,
+                                  HttpServletResponse response,
+                                  @ModelAttribute NewReplyForm newReplyForm,
+                                  @PathVariable("userDid") String userDid,
+                                  @PathVariable("postRKey") String postRKey,
+                                  @RequestParam("reply") String reply) {
+        try {
+            var replyRecord = dsl.selectFrom(REPLY)
+                    .where(REPLY.ATURI.eq(reply))
+                    .fetchAny();
+
+            model.addAttribute("reply", replyRecord);
+            return "pages/post/components/reply";
+        } catch (Exception e) {
+            // TODO
+            return "";
+        }
+    }
+
+    @GetMapping("/post/{userDid}/{postRKey}/htmx/openEditPost")
+    public String getOpenEditPost(Model model,
+                                  HttpServletResponse response,
+                                  @PathVariable("userDid") String userDid,
+                                  @PathVariable("postRKey") String postRKey) {
+        var clientOpt = sessionService.getCurrentClient();
+        if (clientOpt.isEmpty() || !sessionService.isAuthenticated()) {
+            response.setHeader("HX-Redirect", "/login?next=/post/" + userDid + "/" + postRKey + "&msg=To edit a post, please log in.");
+            return "empty";
+        }
+
+        try {
+            var postRecord = dsl.selectFrom(POST)
+                    .where(POST.ATURI.eq(new AtUri(userDid, PostRecord.recordCollection, postRKey).toString()))
+                    .fetchAny();
+
+            var form = new UpdatePostForm();
+            form.setContent(postRecord.getContent());
+            model.addAttribute("form", form);
+            model.addAttribute("post", postRecord);
+
+            return "pages/post/htmx/postEditor";
+        } catch (Exception e) {
+            // TODO
+            return "";
+        }
+    }
+
+    @PutMapping("/post/{userDid}/{postRKey}/htmx/editPost")
+    public String editPost(Model model,
+                           HttpServletResponse response,
+                           @ModelAttribute UpdatePostForm updatePostForm,
+                           @PathVariable("userDid") String userDid,
+                           @PathVariable("postRKey") String postRKey) throws AtprotoUnauthorized, IOException {
+        var clientOpt = sessionService.getCurrentClient();
+        if (clientOpt.isEmpty() || !sessionService.isAuthenticated()) {
+            response.setHeader("HX-Redirect", "/login?next=/post/" + userDid + "/" + postRKey + "&msg=To edit a post, please log in.");
+            return "empty";
+        }
+
+        AtprotoClient client = clientOpt.get();
+        AtUri postAtUri = new AtUri(userDid, PostRecord.recordCollection, postRKey);
+
+        PostRecord post = new PostRecord(postAtUri, dsl);
+
+        post.setContent(updatePostForm.getContent());
+        post.setUpdatedAt(Instant.now());
+
+        client.updateRecord(post);
+
+        var newPost = new com.jcs.javacommunitysite.jooq.tables.records.PostRecord();
+        newPost.setAturi(post.getAtUri().toString());
+        newPost.setTitle(post.getTitle());
+        newPost.setContent(post.getContent());
+        newPost.setCreatedAt(post.getCreatedAt().atOffset(ZoneOffset.UTC));
+        newPost.setUpdatedAt(post.getUpdatedAt().atOffset(ZoneOffset.UTC));
+
+        model.addAttribute("post", newPost);
+        return "pages/post/components/opPost";
+    }
+
+    @GetMapping("/post/{userDid}/{postRKey}/htmx/cancelEditPost")
+    public String cancelEditPost(Model model,
+                                 HttpServletResponse response,
+                                 @ModelAttribute UpdatePostForm updatePostForm,
+                                 @PathVariable("userDid") String userDid,
+                                 @PathVariable("postRKey") String postRKey) {
+        try {
+            var postRecord = dsl.selectFrom(POST)
+                    .where(POST.ATURI.eq(new AtUri(userDid, PostRecord.recordCollection, postRKey).toString()))
+                    .fetchAny();
+
+            model.addAttribute("post", postRecord);
+            return "pages/post/components/opPost";
+        } catch (Exception e) {
+            // TODO
+            return "";
+        }
+    }
+
+
 }

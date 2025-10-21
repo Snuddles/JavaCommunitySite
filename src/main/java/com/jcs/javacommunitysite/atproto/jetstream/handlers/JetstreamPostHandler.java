@@ -25,6 +25,7 @@ public class JetstreamPostHandler implements JetstreamHandler {
         PostRecord record = new PostRecord(atUri, recordJson);
 
         System.out.println("Post record received from AtProto!");
+        System.out.println(" - AtUri: " + record.getAtUri());
         System.out.println(" - Title: " + record.getTitle());
         System.out.println(" - Content: " + record.getContent());
         System.out.println(" - Category: " + record.getCategory());
@@ -67,6 +68,7 @@ public class JetstreamPostHandler implements JetstreamHandler {
         }
         
         System.out.println("Post record received from AtProto!");
+        System.out.println(" - AtUri: " + record.getAtUri());
         System.out.println(" - Title: " + record.getTitle());
         System.out.println(" - Content: " + record.getContent());
         System.out.println(" - Category: " + record.getCategory());

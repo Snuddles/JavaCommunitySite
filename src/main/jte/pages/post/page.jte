@@ -1,31 +1,30 @@
 @import com.jcs.javacommunitysite.atproto.AtUri
 @import com.jcs.javacommunitysite.forms.NewReplyForm
+@import com.jcs.javacommunitysite.jooq.tables.records.PostRecord
 @import com.jcs.javacommunitysite.jooq.tables.records.ReplyRecord
 
-@param AtUri aturi
-
-@param String title
-@param String postContent
-@param String postTimestamp
+@param PostRecord post
 
 @param ReplyRecord[] postReplies
 
 @param NewReplyForm newReplyForm
 
+!{AtUri aturi = new AtUri(post.getAturi());}
+
 @template.layout.main(
-title = title,
+title = post.getTitle(),
 content = @`
     <div class="post-page">
-        <h2>${title}</h2>
-        @template.pages.post.components.opPost(content=postContent, username="Test", handle="test.bsky.social", timestamp=postTimestamp, aturi=aturi)
+        <h2>${post.getTitle()}</h2>
+        @template.pages.post.components.opPost(post=post)
 
         @for(var reply : postReplies)
-            <div class="mid-reply-runner"></div>
             @template.pages.post.components.reply(reply=reply)
         @endfor
 
         <div id="new-reply-insert-point"></div>
 
+        <div class="mid-reply-runner"></div>
         <form
             class="reply-container"
             hx-post="/post/${aturi.getDid()}/${aturi.getRecordKey()}/htmx/reply"
