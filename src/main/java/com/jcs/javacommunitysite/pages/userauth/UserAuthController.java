@@ -24,7 +24,7 @@ public class UserAuthController {
     public String login(Model model, @RequestParam(required = false) String msg) {
         // Check if user is already logged in - redirect if so
         if (sessionService.isAuthenticated()) {
-            return "redirect:/";
+            return "redirect:/browse";
         }
 
         model.addAttribute("loginForm", new LoginForm());
