@@ -5,6 +5,7 @@ import com.jcs.javacommunitysite.atproto.records.ForumCategoryRecord;
 import com.jcs.javacommunitysite.atproto.service.AtprotoSessionService;
 import com.jcs.javacommunitysite.jooq.tables.records.PostRecord;
 import org.jooq.DSLContext;
+import org.jooq.exception.DataAccessException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,34 +30,39 @@ public class CategoryPageController {
     }
 
     @GetMapping ("/{group}/{categoryRKey}")
-    public String getCategoryPosts(@PathVariable String group, @PathVariable String categoryRKey, Model model){
+    public String getCategoryPosts(@PathVariable String group, @PathVariable String categoryRKey, Model model) {
 
-        var clientOpt = sessionService.getCurrentClient();
+        try {
+            var clientOpt = sessionService.getCurrentClient();
 
-        if (!sessionService.isAuthenticated() || clientOpt.isEmpty()) {
+            if (!sessionService.isAuthenticated() || clientOpt.isEmpty()) {
+                return "redirect:/";
+            }
+
+            AtUri categoryAtUri = new AtUri(JCS_FORUM_DID, ForumCategoryRecord.recordCollection, categoryRKey);
+
+            String categoryName = dsl.select(CATEGORY.NAME)
+                    .from(CATEGORY)
+                    .where(CATEGORY.ATURI.eq(categoryAtUri.toString()))
+                    .fetchOne(CATEGORY.NAME);
+
+            List<PostRecord> allPostsInCategory = dsl.selectFrom(POST).where(POST.CATEGORY_ATURI.eq(categoryAtUri.toString())).fetch();
+
+            model.addAttribute("allPostsInCategory", allPostsInCategory);
+
+            group = group.replaceAll("_", " ");
+            group = toTitleCase(group);
+            model.addAttribute("groupName", group);
+
+            categoryName = Objects.requireNonNull(categoryName).replaceAll("_", " ");
+            categoryName = toTitleCase(categoryName);
+            model.addAttribute("categoryName", categoryName);
+
+            return "pages/categoryPosts";
+        } catch (DataAccessException e) {
+            System.out.println(e.getMessage());
             return "redirect:/";
         }
-
-        AtUri categoryAtUri = new AtUri(JCS_FORUM_DID, ForumCategoryRecord.recordCollection, categoryRKey);
-
-        String categoryName = dsl.select(CATEGORY.NAME)
-                .from(CATEGORY)
-                .where(CATEGORY.ATURI.eq(categoryAtUri.toString()))
-                .fetchOne(CATEGORY.NAME);
-
-        List<PostRecord> allPostsInCategory = dsl.selectFrom(POST).where(POST.CATEGORY_ATURI.eq(categoryAtUri.toString())).fetch();
-
-        model.addAttribute("allPostsInCategory", allPostsInCategory);
-
-        group = group.replaceAll("_", " ");
-        group = toTitleCase(group);
-        model.addAttribute("groupName", group);
-
-        categoryName = Objects.requireNonNull(categoryName).replaceAll("_", " ");
-        categoryName = toTitleCase(categoryName);
-        model.addAttribute("categoryName", categoryName);
-
-        return "pages/categoryPosts";
     }
 
     public static String toTitleCase(String input) {
