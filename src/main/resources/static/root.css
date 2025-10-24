@@ -19,7 +19,7 @@
     --border-color: lightgray;
 
     --large-text-1: 32px;
-    --large-text-2: 26px;
+    --large-text-2: 28px;
     --large-text-3: 22px;
     --large-text-4: 20px;
     --large-text-5: 18px;
@@ -83,7 +83,7 @@ p {
     overflow-y: auto;
     flex-direction: column;
     align-items: center;
-    padding: 25px 40px;
+    padding: 50px;
 }
 
 .page {
@@ -232,15 +232,14 @@ p {
     border-radius: var(--border-radius-1);
 }
 
-.new-post-page {
+.new-question-container {
     display: flex;
-    justify-content: center;
-    flex-direction: column;
     gap: 20px;
     width: 100%;
 
     & form {
         display: flex;
+        flex: 1;
         flex-direction: column;
         gap: 20px;
 
@@ -252,7 +251,7 @@ p {
 
         & label {
             font-weight: bold;
-            font-size: var(--large-text-3);
+            font-size: var(--large-text-5);
         }
 
         & .category-select-container {
@@ -272,7 +271,7 @@ p {
         }
 
         & .post-textarea {
-            height: 400px;
+            height: 300px;
         }
     }
 }
@@ -494,6 +493,11 @@ pre {
         font-size: var(--large-text-1);
         font-weight: bold;
         padding-left: var(--button-side-padding);
+
+        & a {
+            text-decoration: none;
+            color: black;
+        }
     }
 
     & .nav-buttons {
@@ -502,12 +506,16 @@ pre {
         align-items: stretch;
         gap: 5px;
         list-style-type: none;
+        height: 100%;
 
         & li {
             display: flex;
         }
 
         & a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             padding: 10px var(--button-side-padding);
             width: 100%;
             color: black;
@@ -518,6 +526,11 @@ pre {
             border: solid 1px transparent;
             transition: background-color 80ms, color 80ms, border-color 80ms;
 
+            & img {
+                width: 24px;
+                height: 24px;
+            }
+
             &:hover:not(.active) {
                 border-color: var(--border-color);
             }
@@ -525,6 +538,10 @@ pre {
             &.active {
                 background-color: var(--accent);
                 color: var(--accent-text-color);
+
+                & img {
+                    filter: invert(100%);
+                }
             }
         }
     }

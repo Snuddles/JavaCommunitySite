@@ -16,86 +16,39 @@
 <body class="root" hx-ext="response-targets">
 <div class="sidebar">
 
-    <h1>jcs.</h1>
+    <h1><a href="/">jcs.</a></h1>
 
     <%-- Nav buttons --%>
     <ul class="nav-buttons">
         <li>
-            <a id="browse-button" href="/browse">
-                Browse
+            <a id="ask-nav-button" href="/ask">
+                <img src="question.svg" alt="Ask" />
+                Ask
             </a>
         </li>
         <li>
-            <a id="hot-posts-button" href="/hotPosts">
-                Hot Posts
+            <a id="answer-nav-button" href="/answer">
+                <img src="answer.svg" alt="Answer" />
+                Answer
             </a>
         </li>
         <li>
-            <a id="new-posts-button" href="/newPosts">
-                New Posts
+            <a id="search-nav-button" href="/search">
+                <img src="search.svg" alt="Search" />
+                Search
             </a>
         </li>
+
+        <%-- Spacer --%>
+        <div style="flex: 1"></div>
+
         <li>
-            <a id="new-replies-button" href="/newReplies">
-                New Replies
+            <a id="chat-nav-button" href="/chat">
+                <img src="chat.svg" alt="Chat" />
+                Chat
             </a>
         </li>
     </ul>
-
-    <%-- Notifications --%>
-    <div class="navbar-section notifications">
-        <h2>Notifications</h2>
-        <ul>
-            <li>
-                <a href="">
-                    <p class="notification-title">New reply to your post</p>
-                    <p class="notification-content">Lorem Ipsum filler text</p>
-                </a>
-            </li>
-            <li>
-                <a href="">
-                    <p class="notification-title">New reaction to your post</p>
-                    <p class="notification-content">Lorem Ipsum filler text</p>
-                </a>
-            </li>
-            <li>
-                <a href="">
-                    <p class="notification-title">New mention on post</p>
-                    <p class="notification-content">Lorem Ipsum filler text</p>
-                </a>
-            </li>
-        </ul>
-    </div>
-
-    <%-- Recent Browsing --%>
-    <div class="navbar-section recent-browsing">
-        <h2>Recent Browsing</h2>
-        <ul>
-            <li>
-                <a href="">
-                    <p>How to set up Springboot super quickly?</p>
-                </a>
-            </li>
-            <li>
-                <a href="">
-                    <p>Check out my new tool that I made yesterday</p>
-                    <p class="new-content-notif">
-                        &#x21AA; 2 new replies
-                    </p>
-                </a>
-            </li>
-            <li>
-                <a href="">
-                    <p>How to make a calculator to calculate 2 + 2</p>
-                </a>
-            </li>
-            <li>
-                <a href="">
-                    <p>When did everyone start using Java?</p>
-                </a>
-            </li>
-        </ul>
-    </div>
 </div>
 
 <%-- The Content for the right side of the page --%>
@@ -113,10 +66,10 @@
     // Nav button highlighting
     const path = window.location.pathname.split('/')[1];
     const buttons = {
-        'browse': 'browse-button',
-        'hotPosts': 'hot-posts-button',
-        'newPosts': 'new-posts-button',
-        'newReplies': 'new-replies-button'
+        'ask': 'ask-nav-button',
+        'answer': 'answer-nav-button',
+        'search': 'search-nav-button',
+        'chat': 'chat-nav-button',
     };
 
     if (path in buttons) {

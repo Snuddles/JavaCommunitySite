@@ -11,9 +11,6 @@
         </div>
     </div>
     <div class="top-right-buttons">
-        <a href="/newPost" class="button">
-            + New Post
-        </a>
         <a href="" class="">
             pfp
         </a>
