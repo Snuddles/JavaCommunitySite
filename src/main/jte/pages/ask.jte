@@ -1,4 +1,5 @@
 @param com.jcs.javacommunitysite.pages.askpage.NewPostForm postForm
+@param String currentUserAvatarUrl = null
 
 @template.layout.main(
     title = "Ask",
@@ -6,7 +7,8 @@
     <div class="page-content">
 
         @template.components.pageHeader(
-            content = @`<h2>Ask a Question</h2>`
+            content = @`<h2>Ask a Question</h2>`,
+            avatarUrl = currentUserAvatarUrl
         )
 
         <div class="new-question-container">
