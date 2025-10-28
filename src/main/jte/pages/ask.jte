@@ -1,3 +1,6 @@
+@import com.jcs.javacommunitysite.atproto.AtUri
+@import com.jcs.javacommunitysite.atproto.records.PostRecord
+
 @param com.jcs.javacommunitysite.pages.askpage.NewPostForm postForm
 
 @template.layout.main(
@@ -32,7 +35,32 @@
         <div class="divider"></div>
 
         <h2>My Questions</h2>
-        ...some questions here...
+
+        @template.components.post(
+            aturi = new AtUri("123", PostRecord.recordCollection, "abc"),
+            title = "My Post",
+            content = "Lorem Ipsum dolor amet Lorem Ipsum dolor amet Lorem Ipsum dolor amet Lorem Ipsum dolor amet",
+            amtReplies = 24
+        )
+        @template.components.post(
+            aturi = new AtUri("123", PostRecord.recordCollection, "abc"),
+            title = "My Post",
+            content = "Lorem Ipsum dolor amet Lorem Ipsum dolor amet Lorem Ipsum dolor amet Lorem Ipsum dolor amet",
+            amtReplies = 24
+        )
+        @template.components.post(
+            aturi = new AtUri("123", PostRecord.recordCollection, "abc"),
+            title = "My Post",
+            content = "Lorem Ipsum dolor amet Lorem Ipsum dolor amet Lorem Ipsum dolor amet Lorem Ipsum dolor amet",
+            amtReplies = 24
+        )@template.components.post(
+            aturi = new AtUri("123", PostRecord.recordCollection, "abc"),
+            title = "My Post",
+            content = "Lorem Ipsum dolor amet Lorem Ipsum dolor amet Lorem Ipsum dolor amet Lorem Ipsum dolor amet",
+            amtReplies = 24
+        )
+
+
 
     </div>
     `

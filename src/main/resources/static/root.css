@@ -27,6 +27,7 @@
 
     --regular-text: 16px;
     --small-text: 14px;
+    --xsmall-text: 12px;
 
     --pfp-post-size: 42px;
 
@@ -685,11 +686,14 @@ pre {
 }
 
 .post-item {
+    position: relative;
     display: flex;
     gap: 10px;
-    align-items: center;
     justify-content: space-between;
     overflow-x: hidden;
+    border: solid 1px var(--border-color);
+    border-radius: var(--border-radius-1);
+    padding: 15px 20px;
 
     & a {
         text-decoration: none;
@@ -703,6 +707,12 @@ pre {
         }
     }
 
+    & .post-name-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
     & .post-name {
         font-size: var(--large-text-6);
     }
@@ -712,5 +722,80 @@ pre {
         text-wrap: nowrap;
         overflow-x: hidden;
         text-overflow: ellipsis;
+    }
+
+    & .tags {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        padding-top: 5px;
+    }
+}
+
+.search-box-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+
+    & .filters {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        width: 100%;
+    }
+}
+
+.filter-button {
+    all: unset;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--border-radius-2);
+    padding: 4px 12px;
+    font-size: var(--small-text);
+    border: 1px solid var(--border-color);
+    user-select: none;
+    transition: background-color 80ms, filter 80ms, color 80ms, border-color 80ms;
+
+    &:hover:not(:disabled) {
+        cursor: pointer;
+    }
+
+    &.active {
+        background-color: var(--accent);
+        color: var(--accent-text-color);
+        border-color: var(--accent);
+    }
+}
+
+.tag {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--border-radius-2);
+    padding: 2px 8px;
+    font-size: var(--xsmall-text);
+    background-color: var(--accent);
+    color: var(--accent-text-color);
+}
+
+.section-marker-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    & .marker {
+        width: 10px;
+        height: var(--large-text-3);
+        border-radius: var(--border-radius-3);
+
+        &.green {
+            background-color: green;
+        }
+
+        &.orange {
+            background-color: orange;
+        }
     }
 }
