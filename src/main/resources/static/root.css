@@ -968,3 +968,53 @@ pre {
 .preload {
     display: none !important;
 }
+
+.user-info-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    & .not-the-button {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 8px;
+
+        & .name-handle > p {
+            color: var(--subtext-color);
+        }
+    }
+}
+
+.pfp-tabs {
+    //background-color: #ff0000;
+    display: flex
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 10px;
+}
+
+.pfp-tabs {
+    & .button {
+        background-color: transparent;
+        color: #3b82f6;
+        width: auto;                 /* override any 100% width */
+        flex: 0 0 auto;              /* don’t stretch or wrap */
+        display: inline-flex;        /* optional, nice for centering text */
+        align-items: center;
+        justify-content: center;
+    }
+    .button.active {
+        background-color: #3b82f6; /* blue */
+        color: white;
+    }
+}
+
+.userPosts {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}

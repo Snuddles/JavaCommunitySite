@@ -12,12 +12,14 @@
         </div>
     </div>
     <div class="top-right-buttons">
-        <a href="" class="">
-            @if(avatarUrl != null && !avatarUrl.trim().isEmpty())
+        @if(avatarUrl != null && !avatarUrl.trim().isEmpty())
+            <a href="/pfp" class="">
                 <img src="${avatarUrl}" alt="Profile Avatar" style="width: 32px; height: 32px; border-radius: 50%;">
-            @else
+            </a>
+        @else
+            <a href="/login" class="">
                 <img src="/user.svg" alt="Default Profile Avatar" style="width: 32px; height: 32px; border-radius: 50%;">
-            @endif
-        </a>
+            </a>
+        @endif
     </div>
 </div>
