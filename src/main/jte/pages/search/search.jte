@@ -16,7 +16,7 @@
             class="search-box-container"
             hx-post="/search"
             hx-target="#search-results"
-            hx-trigger="input delay:500ms, submit"
+            hx-trigger="input delay:750ms, submit"
             hx-indicator="#indicator, #search-results"
             action=""
         >
