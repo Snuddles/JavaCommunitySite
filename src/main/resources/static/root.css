@@ -738,11 +738,47 @@ pre {
     gap: 10px;
     width: 100%;
 
+    & .search-form {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
     & .filters {
         display: flex;
         align-items: center;
         gap: 5px;
         width: 100%;
+
+        &.sort-filters {
+            margin-top: 10px;
+        }
+
+        & .sort-label {
+            margin-right: 10px;
+            color: var(--subtext-color);
+        }
+    }
+}
+
+.search-results {
+    & .no-results {
+        text-align: center;
+        padding: 40px;
+        color: var(--subtext-color);
+    }
+
+    & .results-info {
+        margin-bottom: 15px;
+        color: var(--subtext-color);
+    }
+
+    & .results-list {
+        list-style: none;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
     }
 }
 
