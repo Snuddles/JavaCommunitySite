@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.time.temporal.ChronoUnit;
 
 import static com.jcs.javacommunitysite.jooq.tables.Post.POST;
 import static com.jcs.javacommunitysite.jooq.tables.Reply.REPLY;
@@ -76,10 +77,10 @@ public class ProfilePageController {
                         // Calculate time text
                         var now = OffsetDateTime.now();
                         var createdAt = post.getCreatedAt();
-                        var yearsBetween = java.time.temporal.ChronoUnit.YEARS.between(createdAt, now);
-                        var daysBetween = java.time.temporal.ChronoUnit.DAYS.between(createdAt, now);
-                        var hoursBetween = java.time.temporal.ChronoUnit.HOURS.between(createdAt, now);
-                        var minutesBetween = java.time.temporal.ChronoUnit.MINUTES.between(createdAt, now);
+                        var yearsBetween = ChronoUnit.YEARS.between(createdAt, now);
+                        var daysBetween = ChronoUnit.DAYS.between(createdAt, now);
+                        var hoursBetween = ChronoUnit.HOURS.between(createdAt, now);
+                        var minutesBetween = ChronoUnit.MINUTES.between(createdAt, now);
 
                         String timeText;
                         if (yearsBetween > 0) {
