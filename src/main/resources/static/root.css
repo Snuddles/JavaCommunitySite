@@ -1165,3 +1165,48 @@ pre {
     flex-direction: column;
     gap: 10px;
 }
+
+.userAnswers {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    & .userAnswer {
+        border: solid 1px var(--border-color);
+        border-radius: var(--border-radius-1);
+        padding: 15px 20px;
+
+        & .otherPost {
+            & .postContent {
+                color: var(--subtext-color);
+                text-wrap: nowrap;
+                overflow-x: hidden;
+                text-overflow: ellipsis;
+            }
+        }
+        .userReply {
+            padding-top: 12px;
+            display: flex;
+            flex-direction: row;
+            gap: 5px;
+            align-items: center;
+            text-wrap: nowrap;
+            overflow-x: hidden;
+            text-overflow: ellipsis;
+        }
+        .tags {
+            display: flex;
+            flex-direction: row;
+            gap: 5px;
+            padding-top: 15px;
+        }
+    }
+}
+
+.arrow-right {
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent; /* Top transparent border */
+  border-bottom: 5px solid transparent; /* Bottom transparent border */
+  border-left: 10px solid black; /* Left border forms the arrow head */
+}

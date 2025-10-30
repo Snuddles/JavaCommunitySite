@@ -173,6 +173,19 @@ public class ProfilePageController {
                             } else {
                                 postMap.put("tags", "[]");
                             }
+
+                            var tagsList = new ArrayList<String>();
+                            if (originalPost.getTags() != null) {
+                                try {
+                                    // Parse JSON array using dev.mccue.json
+                                    var tagsJson = Json.read(originalPost.getTags().data());
+                                    var tagsArray = array(string()).decode(tagsJson);
+                                    tagsList.addAll(tagsArray);
+                                } catch (Exception e) {
+                                    System.err.println("Error parsing tags JSON for post " + originalPost.getAturi() + ": " + e.getMessage());
+                                }
+                            }
+                            m.addAttribute("tagsList", tagsList);
                             
                             postData.put(reply.getAturi(), postMap);
                         }
