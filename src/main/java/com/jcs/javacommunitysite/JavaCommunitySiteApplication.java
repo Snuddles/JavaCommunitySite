@@ -51,19 +51,16 @@ class JetstreamStartupComponent {
     public void init() {
         try {
             if (jetstreamClient != null) {
+                System.out.println("Re-opening jetstream websocket...");
                 jetstreamClient.close();
             }
-            jetstreamClient = new JetstreamWebsocketClient(new URI("wss://jetstream2.us-east.bsky.network/subscribe"
+            jetstreamClient = new JetstreamWebsocketClient(new URI("wss://jetstream1.us-east.bsky.network/subscribe"
                     + "?wantedCollections=dev.fudgeu.experimental.atforumv1.forum.identity"
-                    + "&wantedCollections=dev.fudgeu.experimental.atforumv1.forum.group"
-                    + "&wantedCollections=dev.fudgeu.experimental.atforumv1.forum.category"
                     + "&wantedCollections=dev.fudgeu.experimental.atforumv1.feed.question"
-                    + "&wantedCollections=dev.fudgeu.experimental.atforumv1.feed.vote"
                     + "&wantedCollections=dev.fudgeu.experimental.atforumv1.feed.reply"
             ));
 
             jetstreamClient.registerJetstreamHandler(addLexiconPrefix("forum.identity"), new JetstreamForumIdentityHandler(dsl));
-            jetstreamClient.registerJetstreamHandler(addLexiconPrefix("feed.vote"), new JetstreamVoteHandler(dsl));
             jetstreamClient.registerJetstreamHandler(addLexiconPrefix("feed.reply"), new JetstreamReplyHandler(dsl));
             jetstreamClient.registerJetstreamHandler(addLexiconPrefix("feed.question"), new JetstreamQuestionHandler(dsl));
 
