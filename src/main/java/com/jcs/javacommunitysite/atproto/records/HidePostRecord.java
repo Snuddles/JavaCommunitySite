@@ -14,8 +14,6 @@ public class HidePostRecord extends AtprotoRecord {
     private AtUri target;
     private Instant createdAt;
 
-    public HidePostRecord() { }
-
     public HidePostRecord(AtUri atUri) {
         super(atUri);
     }

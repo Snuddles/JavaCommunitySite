@@ -2,6 +2,8 @@
 
  import com.jcs.javacommunitysite.atproto.AtUri;
  import com.jcs.javacommunitysite.atproto.AtprotoClient;
+ import com.jcs.javacommunitysite.atproto.records.HidePostRecord;
+ import com.jcs.javacommunitysite.atproto.records.HideReplyRecord;
  import com.jcs.javacommunitysite.atproto.records.QuestionRecord;
  import com.jcs.javacommunitysite.forms.UpdatePostForm;
  import com.jcs.javacommunitysite.atproto.exceptions.AtprotoUnauthorized;
@@ -196,7 +198,11 @@
          var client = clientOpt.get();
 
          boolean ownsThisPost = client.isSameUser(userDid);
+//         boolean isAdmin =
+//         boolean isHidden =
 
+//         model.addAttribute("isAdmin", isAdmin);
+//         model.addAttribute("isHidden", isHidden);
          model.addAttribute("ownsThisPost", ownsThisPost);
          model.addAttribute("aturi", new AtUri(userDid, QuestionRecord.recordCollection, postRKey));
 
@@ -239,6 +245,11 @@
              return "";
          }
 
+//         boolean isAdmin =
+//         boolean isHidden =
+
+//         model.addAttribute("isAdmin", isAdmin);
+//         model.addAttribute("isHidden", isHidden);
          model.addAttribute("aturi", new AtUri(userDid, QuestionRecord.recordCollection, postRKey));
 
          return "pages/post/htmx/confirmDeletePostModal";
@@ -449,6 +460,109 @@
          } catch (Exception e) {
              // TODO
              return "";
+         }
+     }
+
+     @PostMapping("/post/{userDid}/{postRKey}/htmx/hidePost")
+     public String hidePost(Model model,
+                            HttpServletResponse response,
+                            @PathVariable("userDid") String userDid,
+                            @PathVariable("postRKey") String postRKey)
+     {
+         var clientOpt = sessionService.getCurrentClient();
+         if (clientOpt.isEmpty() || !sessionService.isAuthenticated()) {
+             response.setHeader("HX-Redirect", "/login?next=/post/" + userDid + "/" + postRKey + "&msg=To hide a post, please log in.");
+             return "empty";
+         }
+         AtprotoClient client = clientOpt.get();
+
+         // Check if they are an admin
+
+         try {
+             var hidePostRecord = new HidePostRecord(new AtUri(userDid, QuestionRecord.recordCollection, postRKey), (Instant) null);
+             client.createRecord(hidePostRecord);
+             return "empty";
+         } catch (Exception e) {
+             response.setStatus(500);
+             model.addAttribute("toastMsg", "An error occurred while trying to hide the post. Please try again later.");
+             return "components/errorToast";
+         }
+     }
+
+     @PostMapping("/post/{userDid}/{postRKey}/htmx/hideReply")
+     public String hideReply(Model model,
+                            HttpServletResponse response,
+                            @PathVariable("userDid") String userDid,
+                            @PathVariable("postRKey") String postRKey,
+                            @RequestParam("reply") String reply)
+     {
+         var clientOpt = sessionService.getCurrentClient();
+         if (clientOpt.isEmpty() || !sessionService.isAuthenticated()) {
+             response.setHeader("HX-Redirect", "/login?next=/post/" + userDid + "/" + postRKey + "&msg=To hide a reply, please log in.");
+             return "empty";
+         }
+         AtprotoClient client = clientOpt.get();
+
+         // Check if they are an admin
+
+         try {
+             var hideReplyRecord = new HideReplyRecord(new AtUri(userDid, ReplyRecord.recordCollection, postRKey), (Instant) null);
+             client.createRecord(hideReplyRecord);
+             return "empty";
+         } catch (Exception e) {
+             response.setStatus(500);
+             model.addAttribute("toastMsg", "An error occurred while trying to hide the reply. Please try again later.");
+             return "components/errorToast";
+         }
+     }
+
+     @PostMapping("/post/{userDid}/{postRKey}/htmx/unhidePost")
+     public String unhidePost(Model model,
+                            HttpServletResponse response,
+                            @PathVariable("userDid") String userDid,
+                            @PathVariable("postRKey") String postRKey)
+     {
+         var clientOpt = sessionService.getCurrentClient();
+         if (clientOpt.isEmpty() || !sessionService.isAuthenticated()) {
+             response.setHeader("HX-Redirect", "/login?next=/post/" + userDid + "/" + postRKey + "&msg=To unhide a post, please log in.");
+             return "empty";
+         }
+         AtprotoClient client = clientOpt.get();
+
+         // Check if they are an admin
+
+         try {
+             client.deleteRecord(new AtUri(userDid, QuestionRecord.recordCollection, postRKey));
+             return "empty";
+         } catch (Exception e) {
+             response.setStatus(500);
+             model.addAttribute("toastMsg", "An error occurred while trying to unhide the post. Please try again later.");
+             return "components/errorToast";
+         }
+     }
+
+     @PostMapping("/post/{userDid}/{postRKey}/htmx/unhideReply")
+     public String unhideReply(Model model,
+                               HttpServletResponse response,
+                               @PathVariable("userDid") String userDid,
+                               @PathVariable("postRKey") String postRKey,
+                               @RequestParam("reply") String reply) {
+         var clientOpt = sessionService.getCurrentClient();
+         if (clientOpt.isEmpty() || !sessionService.isAuthenticated()) {
+             response.setHeader("HX-Redirect", "/login?next=/post/" + userDid + "/" + postRKey + "&msg=To unhide a reply, please log in.");
+             return "empty";
+         }
+         AtprotoClient client = clientOpt.get();
+
+         // Check if they are an admin
+
+         try {
+             client.deleteRecord(new AtUri(reply));
+             return "empty";
+         } catch (Exception e) {
+             response.setStatus(500);
+             model.addAttribute("toastMsg", "An error occurred while trying to unhide the reply. Please try again later.");
+             return "components/errorToast";
          }
      }
 

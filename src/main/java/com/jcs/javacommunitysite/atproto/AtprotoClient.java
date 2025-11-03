@@ -104,6 +104,29 @@ public class AtprotoClient {
         return response;
     }
 
+    public Json deleteRecord(AtUri atUri) throws AtprotoInvalidRecord, AtprotoUnauthorized, IOException {
+        String handle = session.getHandle();
+        String handleDid = resolveDidFromHandle(handle);
+
+        if (!atUri.getDid().equals(handleDid)) {
+            throw new AtprotoUnauthorized();
+        }
+
+        JsonObject.Builder payload = JsonObject.builder();
+        payload.put("repo", session.getHandle());
+        payload.put("collection", atUri.getCollection());
+        payload.put("rkey", atUri.getRecordKey());
+
+        URI uri = URI.create(session.getPdsHost()).resolve("/xrpc/com.atproto.repo.deleteRecord");
+        URL url = uri.toURL();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.putAll(session.getAuthHeaders());
+
+        Json response = HttpUtil.post(url, payload.build(), headers);
+        return response;
+    }
+
     String resolveDidFromHandle(String handle) throws IOException {
         URI uri = URI.create("https://bsky.social").resolve("/xrpc/com.atproto.identity.resolveHandle?handle=" + URLEncoder.encode(handle, StandardCharsets.UTF_8));
 

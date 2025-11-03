@@ -3,6 +3,8 @@
 @param AtUri post
 @param AtUri reply
 @param boolean ownsThisReply
+@param boolean isAdmin = false
+@param boolean isHidden = false
 
 <div id="popup-menu" class="popup-menu">
     @if(ownsThisReply)
@@ -22,7 +24,30 @@
         >
             Delete
         </button>
-    @else
+    @endif
+    @if(isAdmin)
+        @if(isHidden)
+            <button
+                class="popup-option"
+                hx-get="/post/${aturi.getDid()}/${aturi.getRecordKey()}/htmx/unhideReply?reply=${reply.toString()}"
+                hx-target="body"
+                hx-swap="beforeend"
+            >
+                Unhide
+            </button>
+        @else
+            <button
+                class="popup-option"
+                hx-get="/post/${aturi.getDid()}/${aturi.getRecordKey()}/htmx/hideReply?reply=${reply.toString()}"
+                hx-target="body"
+                hx-swap="beforeend"
+            >
+                Hide
+            </button>
+        @endif
+    @endif
+
+    @if(!ownsThisReply && !isAdmin)
         <p>Sorry, nothing you can do here!</p>
     @endif
 </div>
