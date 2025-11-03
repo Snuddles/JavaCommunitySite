@@ -1,0 +1,27 @@
+{
+  "$type": "com.atproto.lexicon.schema",
+  "lexicon": 1,
+  "id": "dev.fudgeu.experimental.atforumv1.admin.tag",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "tid",
+      "description": "A tag that users can use to categorize their post",
+      "record": {
+        "type": "object",
+        "required": ["name", "createdAt"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 32
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime"
+          }
+        }
+      }
+    }
+  }
+}

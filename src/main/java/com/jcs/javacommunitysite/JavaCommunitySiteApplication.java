@@ -58,11 +58,21 @@ class JetstreamStartupComponent {
                     + "?wantedCollections=dev.fudgeu.experimental.atforumv1.forum.identity"
                     + "&wantedCollections=dev.fudgeu.experimental.atforumv1.feed.question"
                     + "&wantedCollections=dev.fudgeu.experimental.atforumv1.feed.reply"
+                    + "&wantedCollections=dev.fudgeu.experimental.atforumv1.admin.tag"
+                    + "&wantedCollections=dev.fudgeu.experimental.atforumv1.admin.admin_grant"
+                    + "&wantedCollections=dev.fudgeu.experimental.atforumv1.admin.hide_user"
+                    + "&wantedCollections=dev.fudgeu.experimental.atforumv1.admin.hide_post"
+                    + "&wantedCollections=dev.fudgeu.experimental.atforumv1.admin.hide_reply"
             ));
 
             jetstreamClient.registerJetstreamHandler(addLexiconPrefix("forum.identity"), new JetstreamForumIdentityHandler(dsl));
             jetstreamClient.registerJetstreamHandler(addLexiconPrefix("feed.reply"), new JetstreamReplyHandler(dsl));
             jetstreamClient.registerJetstreamHandler(addLexiconPrefix("feed.question"), new JetstreamQuestionHandler(dsl));
+            jetstreamClient.registerJetstreamHandler(addLexiconPrefix("admin.tag"), new JetstreamTagHandler());
+            jetstreamClient.registerJetstreamHandler(addLexiconPrefix("admin.admin_grant"), new JetstreamAdminGrantHandler());
+            jetstreamClient.registerJetstreamHandler(addLexiconPrefix("admin.hide_user"), new JetstreamHideUserHandler());
+            jetstreamClient.registerJetstreamHandler(addLexiconPrefix("admin.hide_post"), new JetstreamHidePostHandler());
+            jetstreamClient.registerJetstreamHandler(addLexiconPrefix("admin.hide_reply"), new JetstreamHideReplyHandler());
 
             jetstreamClient.connect();
         } catch (URISyntaxException e) {

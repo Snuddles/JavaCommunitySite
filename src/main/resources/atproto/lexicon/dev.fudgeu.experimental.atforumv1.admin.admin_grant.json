@@ -1,0 +1,26 @@
+{
+  "$type": "com.atproto.lexicon.schema",
+  "lexicon": 1,
+  "id": "dev.fudgeu.experimental.atforumv1.admin.admin_grant",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "tid",
+      "description": "Grants another user an extension of this superadmin's admin powers",
+      "record": {
+        "type": "object",
+        "required": ["target", "createdAt"],
+        "properties": {
+          "target": {
+            "type": "string",
+            "format": "did"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime"
+          }
+        }
+      }
+    }
+  }
+}
