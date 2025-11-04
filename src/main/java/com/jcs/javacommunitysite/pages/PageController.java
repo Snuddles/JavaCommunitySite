@@ -21,4 +21,10 @@ public class PageController {
         model.addAttribute("groupName", groupName);
         return "pages/groupCategories";
     }
+
+    @GetMapping("/profileMenu")
+    public String getProfileMenu(Model model) {
+        // Add anything you want to pass to the menu
+        return "components/profileMenu";
+    }
 }
