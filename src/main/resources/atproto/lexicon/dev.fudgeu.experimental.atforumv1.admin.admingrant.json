@@ -1,19 +1,19 @@
 {
   "$type": "com.atproto.lexicon.schema",
   "lexicon": 1,
-  "id": "dev.fudgeu.experimental.atforumv1.admin.hide_post",
+  "id": "dev.fudgeu.experimental.atforumv1.admin.admingrant",
   "defs": {
     "main": {
       "type": "record",
       "key": "tid",
-      "description": "Hides a post. This post will not be visible to other users.",
+      "description": "Grants another user an extension of this superadmin's admin powers",
       "record": {
         "type": "object",
         "required": ["target", "createdAt"],
         "properties": {
           "target": {
             "type": "string",
-            "format": "at-uri"
+            "format": "did"
           },
           "createdAt": {
             "type": "string",

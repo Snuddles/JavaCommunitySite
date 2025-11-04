@@ -1,12 +1,12 @@
 {
   "$type": "com.atproto.lexicon.schema",
   "lexicon": 1,
-  "id": "dev.fudgeu.experimental.atforumv1.admin.hide_reply",
+  "id": "dev.fudgeu.experimental.atforumv1.admin.hidepost",
   "defs": {
     "main": {
       "type": "record",
       "key": "tid",
-      "description": "Hides a reply. This reply will not be visible to other users.",
+      "description": "Hides a post. This post will not be visible to other users.",
       "record": {
         "type": "object",
         "required": ["target", "createdAt"],
@@ -18,6 +18,9 @@
           "createdAt": {
             "type": "string",
             "format": "datetime"
+          },
+          "reason": {
+            "type": "string"
           }
         }
       }

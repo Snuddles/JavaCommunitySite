@@ -1,23 +1,26 @@
 {
   "$type": "com.atproto.lexicon.schema",
   "lexicon": 1,
-  "id": "dev.fudgeu.experimental.atforumv1.admin.admin_grant",
+  "id": "dev.fudgeu.experimental.atforumv1.admin.hidereply",
   "defs": {
     "main": {
       "type": "record",
       "key": "tid",
-      "description": "Grants another user an extension of this superadmin's admin powers",
+      "description": "Hides a reply. This reply will not be visible to other users.",
       "record": {
         "type": "object",
         "required": ["target", "createdAt"],
         "properties": {
           "target": {
             "type": "string",
-            "format": "did"
+            "format": "at-uri"
           },
           "createdAt": {
             "type": "string",
             "format": "datetime"
+          },
+          "reason": {
+            "type": "string"
           }
         }
       }

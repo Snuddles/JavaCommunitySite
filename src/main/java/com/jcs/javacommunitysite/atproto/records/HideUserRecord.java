@@ -9,10 +9,11 @@ import static com.jcs.javacommunitysite.JavaCommunitySiteApplication.addLexiconP
 import static dev.mccue.json.JsonDecoder.*;
 
 public class HideUserRecord extends AtprotoRecord {
-    public static final String recordCollection = addLexiconPrefix("admin.hide_user");
+    public static final String recordCollection = addLexiconPrefix("admin.hideuser");
 
     private String target; // DID
     private Instant createdAt;
+    private String reason = null;
 
     public HideUserRecord() { }
 
@@ -24,17 +25,27 @@ public class HideUserRecord extends AtprotoRecord {
         super(atUri, json);
         this.target = field(json, "target", string());
         this.createdAt = Instant.parse(field(json, "createdAt", string()));
+        this.reason = optionalNullableField(json, "reason", string())
+                .orElse(null);
     }
 
     public HideUserRecord(Json json) {
         super();
         this.target = field(json, "target", string());
         this.createdAt = Instant.parse(field(json, "createdAt", string()));
+        this.reason = optionalNullableField(json, "reason", string())
+                .orElse(null);
     }
 
     public HideUserRecord(String targetDid, Instant createdAt) {
         this.target = targetDid;
         this.createdAt = createdAt == null ? Instant.now() : createdAt;
+    }
+
+    public HideUserRecord(String targetDid, String reason) {
+        this.target = targetDid;
+        this.createdAt = Instant.now();
+        this.reason = reason;
     }
 
     @Override
@@ -71,5 +82,13 @@ public class HideUserRecord extends AtprotoRecord {
                 .put("target", target)
                 .put("createdAt", createdAt.toString())
                 .build();
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
     }
 }

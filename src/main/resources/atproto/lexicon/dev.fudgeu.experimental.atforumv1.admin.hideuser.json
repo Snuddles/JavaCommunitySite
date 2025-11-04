@@ -1,7 +1,7 @@
 {
   "$type": "com.atproto.lexicon.schema",
   "lexicon": 1,
-  "id": "dev.fudgeu.experimental.atforumv1.admin.hide_user",
+  "id": "dev.fudgeu.experimental.atforumv1.admin.hideuser",
   "defs": {
     "main": {
       "type": "record",
@@ -18,6 +18,9 @@
           "createdAt": {
             "type": "string",
             "format": "datetime"
+          },
+          "reason": {
+            "type": "string"
           }
         }
       }
