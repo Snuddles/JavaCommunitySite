@@ -8,7 +8,7 @@
 @param List<String> tags = null
 
 <li class="post-item">
-    <a href="/post/${aturi.getDid()}/${aturi.getRecordKey()}" target="_blank">
+    <a href="/post/${aturi.getDid()}/${aturi.getRecordKey()}">
         <div class="post-name-container">
             <h4 class="post-name">${title}</h4>
         </div>

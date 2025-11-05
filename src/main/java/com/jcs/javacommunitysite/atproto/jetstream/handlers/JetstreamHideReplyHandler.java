@@ -23,8 +23,8 @@ public class JetstreamHideReplyHandler implements JetstreamHandler {
     public void handleCreated(AtUri atUri, Json recordJson) {
         HideReplyRecord record = new HideReplyRecord(atUri, recordJson);
 
-        if(!dsl.fetchExists(HIDDEN_REPLY, HIDDEN_REPLY.ATURI.eq(atUri.toString()))) {
-            System.out.println("Hidden Reply record does not exist in database, skipping insert.");
+        if(dsl.fetchExists(HIDDEN_REPLY, HIDDEN_REPLY.ATURI.eq(atUri.toString()))) {
+            System.out.println("Hidden Reply record exists in database, skipping insert.");
             return;
         }
 

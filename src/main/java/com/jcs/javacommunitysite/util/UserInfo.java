@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static com.jcs.javacommunitysite.jooq.tables.User.USER;
+import static com.jcs.javacommunitysite.jooq.tables.UserRole.USER_ROLE;
 
 public class UserInfo {
     public String handle;
@@ -67,5 +68,11 @@ public class UserInfo {
                 user.getDisplayName(),
                 user.getDid()
         );
+    }
+    
+    public static boolean isAdmin(DSLContext dsl, String userDid) {
+        return dsl.fetchExists(USER_ROLE,
+                USER_ROLE.USER_DID.eq(userDid)
+                        .and(USER_ROLE.ROLE_ID.in(1, 2))); // 1 = superadmin, 2 = admin
     }
 }

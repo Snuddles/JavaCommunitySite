@@ -3,8 +3,8 @@
 @param AtUri post
 @param AtUri reply
 @param boolean ownsThisReply
-@param boolean isAdmin = false
-@param boolean isHidden = false
+@param boolean isAdmin
+@param boolean isHidden
 
 <div id="popup-menu" class="popup-menu">
     @if(ownsThisReply)
@@ -29,7 +29,7 @@
         @if(isHidden)
             <button
                 class="popup-option"
-                hx-get="/post/${aturi.getDid()}/${aturi.getRecordKey()}/htmx/unhideReply?reply=${reply.toString()}"
+                hx-post="/post/${post.getDid()}/${post.getRecordKey()}/htmx/unhideReply?reply=${reply.toString()}"
                 hx-target="body"
                 hx-swap="beforeend"
             >
@@ -38,7 +38,7 @@
         @else
             <button
                 class="popup-option"
-                hx-get="/post/${aturi.getDid()}/${aturi.getRecordKey()}/htmx/hideReply?reply=${reply.toString()}"
+                hx-post="/post/${post.getDid()}/${post.getRecordKey()}/htmx/hideReply?reply=${reply.toString()}"
                 hx-target="body"
                 hx-swap="beforeend"
             >

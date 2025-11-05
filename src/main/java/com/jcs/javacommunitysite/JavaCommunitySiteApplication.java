@@ -69,10 +69,10 @@ class JetstreamStartupComponent {
             jetstreamClient.registerJetstreamHandler(addLexiconPrefix("feed.reply"), new JetstreamReplyHandler(dsl));
             jetstreamClient.registerJetstreamHandler(addLexiconPrefix("feed.question"), new JetstreamQuestionHandler(dsl));
             jetstreamClient.registerJetstreamHandler(addLexiconPrefix("admin.tag"), new JetstreamTagHandler(dsl));
-            jetstreamClient.registerJetstreamHandler(addLexiconPrefix("admin.admin_grant"), new JetstreamAdminGrantHandler(dsl));
-            jetstreamClient.registerJetstreamHandler(addLexiconPrefix("admin.hide_user"), new JetstreamHideUserHandler(dsl));
-            jetstreamClient.registerJetstreamHandler(addLexiconPrefix("admin.hide_post"), new JetstreamHidePostHandler(dsl));
-            jetstreamClient.registerJetstreamHandler(addLexiconPrefix("admin.hide_reply"), new JetstreamHideReplyHandler(dsl));
+            jetstreamClient.registerJetstreamHandler(addLexiconPrefix("admin.admingrant"), new JetstreamAdminGrantHandler(dsl));
+            jetstreamClient.registerJetstreamHandler(addLexiconPrefix("admin.hideuser"), new JetstreamHideUserHandler(dsl));
+            jetstreamClient.registerJetstreamHandler(addLexiconPrefix("admin.hidepost"), new JetstreamHidePostHandler(dsl));
+            jetstreamClient.registerJetstreamHandler(addLexiconPrefix("admin.hidereply"), new JetstreamHideReplyHandler(dsl));
 
             jetstreamClient.connect();
         } catch (URISyntaxException e) {

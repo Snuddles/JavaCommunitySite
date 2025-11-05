@@ -3,15 +3,15 @@
 @import com.jcs.javacommunitysite.jooq.tables.records.PostRecord
 @import com.jcs.javacommunitysite.jooq.tables.records.ReplyRecord
 @import com.jcs.javacommunitysite.util.UserInfo
+@import java.util.List
 @import java.util.Map
 
 @param PostRecord post
-
 @param Map<String, UserInfo> users
-
 @param ReplyRecord[] postReplies
-
 @param NewReplyForm newReplyForm
+@param String currentUserAvatarUrl = null
+
 
 !{AtUri aturi = new AtUri(post.getAturi());}
 
@@ -19,8 +19,16 @@
 title = post.getTitle(),
 content = @`
     <div class="post-page">
+        @template.components.pageHeader(
+            content = @`<h3 style="color: var(--subtext-color)">Question</h3>`,
+            avatarUrl = currentUserAvatarUrl,
+        )
+
         <h2>${post.getTitle()}</h2>
-        @template.pages.post.components.opPost(post=post, user=users.get(post.getOwnerDid()))
+        @template.pages.post.components.opPost(
+            post = post,
+            user = users.get(post.getOwnerDid())
+        )
 
         @for(var reply : postReplies)
             @template.pages.post.components.reply(reply=reply, user=users.get(reply.getOwnerDid()))

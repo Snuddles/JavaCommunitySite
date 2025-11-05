@@ -2,8 +2,8 @@
 
 @param AtUri aturi
 @param boolean ownsThisPost
-@param boolean isAdmin = false
-@param boolean isHidden = false
+@param boolean isAdmin
+@param boolean isHidden
 
 <div id="popup-menu" class="popup-menu">
     @if(ownsThisPost)
@@ -28,7 +28,7 @@
         @if(isHidden)
             <button
                 class="popup-option"
-                hx-get="/post/${aturi.getDid()}/${aturi.getRecordKey()}/htmx/unhidePost"
+                hx-post="/post/${aturi.getDid()}/${aturi.getRecordKey()}/htmx/unhidePost"
                 hx-target="body"
                 hx-swap="beforeend"
             >
@@ -37,7 +37,7 @@
         @else
             <button
                 class="popup-option"
-                hx-get="/post/${aturi.getDid()}/${aturi.getRecordKey()}/htmx/hidePost"
+                hx-post="/post/${aturi.getDid()}/${aturi.getRecordKey()}/htmx/hidePost"
                 hx-target="body"
                 hx-swap="beforeend"
             >

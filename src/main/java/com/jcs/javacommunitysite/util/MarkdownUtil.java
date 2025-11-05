@@ -21,7 +21,7 @@ public class MarkdownUtil {
         });
 
 
-        HtmlRenderer renderer = HtmlRenderer.builder().build();
+        HtmlRenderer renderer = HtmlRenderer.builder().escapeHtml(true).build();
         String contentHtml = renderer.render(document);
 
         return contentHtml;

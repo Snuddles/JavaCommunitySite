@@ -10,15 +10,12 @@
  import com.jcs.javacommunitysite.atproto.records.ReplyRecord;
  import com.jcs.javacommunitysite.atproto.service.AtprotoSessionService;
  import com.jcs.javacommunitysite.forms.NewReplyForm;
+ import com.jcs.javacommunitysite.util.ModUtil;
  import com.jcs.javacommunitysite.util.UserInfo;
  import dev.mccue.json.Json;
  import jakarta.servlet.http.HttpServletResponse;
- import org.commonmark.node.AbstractVisitor;
- import org.commonmark.node.Node;
- import org.commonmark.node.Heading;
- import org.commonmark.parser.Parser;
- import org.commonmark.renderer.html.HtmlRenderer;
  import org.jooq.DSLContext;
+ import org.jooq.JSON;
  import org.springframework.stereotype.Controller;
  import org.springframework.ui.Model;
  import org.springframework.web.bind.annotation.*;
@@ -26,13 +23,17 @@
  import java.io.IOException;
  import java.time.Instant;
  import java.time.ZoneOffset;
- import java.util.HashMap;
  import java.util.HashSet;
+ import java.util.Optional;
  import java.util.Set;
 
+ import static com.jcs.javacommunitysite.jooq.tables.HiddenPost.HIDDEN_POST;
  import static com.jcs.javacommunitysite.jooq.tables.Post.POST;
  import static com.jcs.javacommunitysite.jooq.tables.Reply.REPLY;
+ import static com.jcs.javacommunitysite.jooq.tables.HiddenReply.HIDDEN_REPLY;
+ import static com.jcs.javacommunitysite.jooq.tables.Tags.TAGS;
  import static com.jcs.javacommunitysite.jooq.tables.User.USER;
+ import static dev.mccue.json.JsonDecoder.string;
 
  @Controller
  public class PostPageController {
@@ -87,6 +88,7 @@
          model.addAttribute("post", post);
          model.addAttribute("newReplyForm", new NewReplyForm());
          model.addAttribute("postReplies", postReplies);
+         model.addAttribute("currentUserAvatarUrl", getCurrentUserAvatarUrl().orElse(null));
 
          return "pages/post/page";
      }
@@ -198,11 +200,11 @@
          var client = clientOpt.get();
 
          boolean ownsThisPost = client.isSameUser(userDid);
-//         boolean isAdmin =
-//         boolean isHidden =
+         boolean isAdmin = UserInfo.isAdmin(dsl, clientOpt.get().getSession().getDid());
+         boolean isHidden = ModUtil.isPostHidden(dsl, new AtUri(userDid, QuestionRecord.recordCollection, postRKey));
 
-//         model.addAttribute("isAdmin", isAdmin);
-//         model.addAttribute("isHidden", isHidden);
+         model.addAttribute("isAdmin", isAdmin);
+         model.addAttribute("isHidden", isHidden);
          model.addAttribute("ownsThisPost", ownsThisPost);
          model.addAttribute("aturi", new AtUri(userDid, QuestionRecord.recordCollection, postRKey));
 
@@ -226,7 +228,11 @@
          var replyAtUri = new AtUri(reply);
 
          boolean ownsThisReply = client.isSameUser(replyAtUri.getDid());
+         boolean isAdmin = UserInfo.isAdmin(dsl, clientOpt.get().getSession().getDid());
+         boolean isHidden = ModUtil.isReplyHidden(dsl, replyAtUri);
 
+         model.addAttribute("isAdmin", isAdmin);
+         model.addAttribute("isHidden", isHidden);
          model.addAttribute("ownsThisReply", ownsThisReply);
          model.addAttribute("post", postAtUri);
          model.addAttribute("reply", replyAtUri);
@@ -245,11 +251,6 @@
              return "";
          }
 
-//         boolean isAdmin =
-//         boolean isHidden =
-
-//         model.addAttribute("isAdmin", isAdmin);
-//         model.addAttribute("isHidden", isHidden);
          model.addAttribute("aturi", new AtUri(userDid, QuestionRecord.recordCollection, postRKey));
 
          return "pages/post/htmx/confirmDeletePostModal";
@@ -395,9 +396,14 @@
                      .where(POST.ATURI.eq(new AtUri(userDid, QuestionRecord.recordCollection, postRKey).toString()))
                      .fetchAny();
 
+             var allTags = dsl.selectDistinct(TAGS.TAG_NAME)
+                     .from(TAGS)
+                     .fetchInto(String.class);
+
              var form = new UpdatePostForm();
              form.setContent(postRecord.getContent());
              model.addAttribute("form", form);
+             model.addAttribute("allTags", allTags);
              model.addAttribute("post", postRecord);
              model.addAttribute("user", UserInfo.getFromDb(dsl, client.getSession().getDid()));
 
@@ -427,6 +433,7 @@
 
          post.setContent(updatePostForm.getContent());
          post.setUpdatedAt(Instant.now());
+         post.setTags(updatePostForm.getTags());
 
          client.updateRecord(post);
 
@@ -436,6 +443,7 @@
          newPost.setContent(post.getContent());
          newPost.setCreatedAt(post.getCreatedAt().atOffset(ZoneOffset.UTC));
          newPost.setUpdatedAt(post.getUpdatedAt().atOffset(ZoneOffset.UTC));
+         newPost.setTags(JSON.valueOf(Json.of(post.getTags(), Json::of).toString()));
 
          model.addAttribute("post", newPost);
          model.addAttribute("user", UserInfo.getFromDb(dsl, post.getAtUri().getDid()));
@@ -506,7 +514,7 @@
          // Check if they are an admin
 
          try {
-             var hideReplyRecord = new HideReplyRecord(new AtUri(userDid, ReplyRecord.recordCollection, postRKey), (Instant) null);
+             var hideReplyRecord = new HideReplyRecord(new AtUri(reply), (Instant) null);
              client.createRecord(hideReplyRecord);
              return "empty";
          } catch (Exception e) {
@@ -531,8 +539,13 @@
 
          // Check if they are an admin
 
+         var postAtUri = new AtUri(userDid, QuestionRecord.recordCollection, postRKey);
          try {
-             client.deleteRecord(new AtUri(userDid, QuestionRecord.recordCollection, postRKey));
+             var hiddePostAturi = dsl.select(HIDDEN_POST.ATURI)
+                     .from(HIDDEN_POST)
+                     .where(HIDDEN_POST.POST_ATURI.eq(postAtUri.toString()))
+                     .fetchOneInto(String.class);
+             client.deleteRecord(new AtUri(hiddePostAturi));
              return "empty";
          } catch (Exception e) {
              response.setStatus(500);
@@ -557,12 +570,49 @@
          // Check if they are an admin
 
          try {
-             client.deleteRecord(new AtUri(reply));
+             var hiddenReplyAturi = dsl.select(HIDDEN_REPLY.ATURI)
+                     .from(HIDDEN_REPLY)
+                     .where(HIDDEN_REPLY.REPLY_ATURI.eq(reply))
+                     .fetchOneInto(String.class);
+             client.deleteRecord(new AtUri(hiddenReplyAturi));
              return "empty";
          } catch (Exception e) {
              response.setStatus(500);
              model.addAttribute("toastMsg", "An error occurred while trying to unhide the reply. Please try again later.");
              return "components/errorToast";
+         }
+     }
+
+     private Optional<String> getCurrentUserAvatarUrl() {
+         if (!sessionService.isAuthenticated()) {
+             return Optional.empty();
+         }
+
+         var clientOpt = sessionService.getCurrentClient();
+         if (clientOpt.isEmpty()) {
+             return Optional.empty();
+         }
+
+         try {
+             var client = clientOpt.get();
+             String handle = client.getSession().getHandle();
+
+             var profile = com.jcs.javacommunitysite.atproto.AtprotoUtil.getBskyProfile(handle);
+             String userDid = dev.mccue.json.JsonDecoder.field(profile, "did", string());
+
+             var userRecord = dsl.selectFrom(USER)
+                     .where(USER.DID.eq(userDid))
+                     .fetchOne();
+
+             if (userRecord != null && userRecord.getAvatarBloburl() != null && !userRecord.getAvatarBloburl().trim().isEmpty()) {
+                 return Optional.of(userRecord.getAvatarBloburl());
+             }
+
+             return Optional.empty();
+
+         } catch (Exception e) {
+             System.err.println("Error getting current user avatar: " + e.getMessage());
+             return Optional.empty();
          }
      }
 

@@ -3,11 +3,18 @@
 @import com.jcs.javacommunitysite.util.MarkdownUtil
 @import com.jcs.javacommunitysite.util.TimeUtil
 @import com.jcs.javacommunitysite.util.UserInfo
+@import dev.mccue.json.Json
+@import static dev.mccue.json.JsonDecoder.array
+@import static dev.mccue.json.JsonDecoder.string
 
 @param PostRecord post
 @param UserInfo user
 
 !{AtUri aturi = new AtUri(post.getAturi());}
+!{
+    var tagsJson = Json.read(post.getTags().data());
+    var tagsArray = array(string()).decode(tagsJson);
+}
 
 <div id="post" class="post op-post">
     <div class="content">
@@ -36,5 +43,13 @@
         <div class="body">
             $unsafe{MarkdownUtil.render(post.getContent())}
         </div>
+
+        @if(tagsArray.size() > 0)
+            <div class="tags">
+                @for(var tag : tagsArray)
+                    <span class="tag">${tag}</span>
+                @endfor
+            </div>
+        @endif
     </div>
 </div>

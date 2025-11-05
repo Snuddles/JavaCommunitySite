@@ -1,10 +1,14 @@
 package com.jcs.javacommunitysite.pages.searchpage;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SearchForm {
     private String query = "";
     private String status = "";
     private String sortBy = "";
     private String sortDir = "";
+    private List<String> tags = new ArrayList<>();
 
     public SearchForm() { }
 
@@ -38,5 +42,13 @@ public class SearchForm {
 
     public void setSortDir(String sortDir) {
         this.sortDir = sortDir;
+    }
+
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = tags;
     }
 }

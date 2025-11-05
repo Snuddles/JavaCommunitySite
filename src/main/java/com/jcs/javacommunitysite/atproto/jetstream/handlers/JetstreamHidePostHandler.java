@@ -23,8 +23,8 @@ public class JetstreamHidePostHandler implements JetstreamHandler {
     public void handleCreated(AtUri atUri, Json recordJson) {
         HidePostRecord record = new HidePostRecord(atUri, recordJson);
 
-        if(!dsl.fetchExists(HIDDEN_POST, HIDDEN_POST.ATURI.eq(atUri.toString()))) {
-            System.out.println("Hidden Post record does not exist in database, skipping insert.");
+        if(dsl.fetchExists(HIDDEN_POST, HIDDEN_POST.ATURI.eq(atUri.toString()))) {
+            System.out.println("Hidden Post record exists in database, skipping insert.");
             return;
         }
 

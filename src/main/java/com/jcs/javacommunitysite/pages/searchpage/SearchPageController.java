@@ -24,6 +24,7 @@ import org.jooq.SelectConditionStep;
 import static com.jcs.javacommunitysite.jooq.tables.Post.POST;
 import static com.jcs.javacommunitysite.jooq.tables.Reply.REPLY;
 import static com.jcs.javacommunitysite.jooq.tables.User.USER;
+import static com.jcs.javacommunitysite.jooq.tables.Tags.TAGS;
 import static dev.mccue.json.JsonDecoder.array;
 import static dev.mccue.json.JsonDecoder.string;
 
@@ -44,11 +45,17 @@ public class SearchPageController {
     ) {
         SearchForm searchForm = new SearchForm();
 
-        model.addAttribute("searchForm", searchForm);
+        var tags = dsl.select(TAGS.ATURI, TAGS.TAG_NAME)
+                .from(TAGS)
+                .orderBy(TAGS.TAG_NAME)
+                .fetchMap(TAGS.ATURI, TAGS.TAG_NAME);
 
+        model.addAttribute("searchForm", searchForm);
+        model.addAttribute("tags", tags);
         getCurrentUserAvatarUrl().ifPresent(avatarUrl ->
             model.addAttribute("currentUserAvatarUrl", avatarUrl)
         );
+        
 
         return "pages/search/search";
     }
@@ -62,15 +69,16 @@ public class SearchPageController {
         var status = searchForm.getStatus();
         var sortBy = searchForm.getSortBy();
         var sortDir = searchForm.getSortDir();
+        var tags = searchForm.getTags();
 
         List<SearchResult> searchResults = new ArrayList<>();
         if (!query.isEmpty() && !status.isEmpty() && !sortBy.isEmpty() && !sortDir.isEmpty()) {
-            System.out.println("PERFORMING SEARCH");
             searchResults = performSearch(
                     query,
                     status,
                     sortBy,
-                    sortDir
+                    sortDir,
+                    tags
             );
         }
 
@@ -78,7 +86,7 @@ public class SearchPageController {
         return "pages/search/htmx/results";
     }
 
-    private List<SearchResult> performSearch(String query, String status, String sortBy, String sortDir) {
+    private List<SearchResult> performSearch(String query, String status, String sortBy, String sortDir, List<String> tags) {
         try {
             final int LIMIT = 50;
             List<SearchResult> accumulated = new ArrayList<>();
@@ -209,6 +217,24 @@ public class SearchPageController {
                         if (seenAturis.add(aturi)) {
                             accumulated.add(mapRecordToSearchResult(r));
                         }
+                    }
+                }
+            }
+
+            // Filter out tags
+            if (tags != null && !tags.isEmpty()) {
+                var copy = new ArrayList<>(accumulated);
+                for (var result : copy) {
+                    boolean hasTag = false;
+                    for (var tag : tags) {
+                        if (result.getTags().contains(tag)) {
+                            hasTag = true;
+                            break;
+                        }
+                    }
+
+                    if (!hasTag) {
+                        accumulated.remove(result);
                     }
                 }
             }

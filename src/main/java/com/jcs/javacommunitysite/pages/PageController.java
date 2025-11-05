@@ -1,5 +1,8 @@
 package com.jcs.javacommunitysite.pages;
+import com.jcs.javacommunitysite.atproto.AtprotoClient;
 import com.jcs.javacommunitysite.atproto.service.AtprotoSessionService;
+import com.jcs.javacommunitysite.util.UserInfo;
+import jakarta.servlet.http.HttpServletResponse;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,8 +26,16 @@ public class PageController {
     }
 
     @GetMapping("/profileMenu")
-    public String getProfileMenu(Model model) {
-        // Add anything you want to pass to the menu
+    public String getProfileMenu(Model model, HttpServletResponse response) {
+        var clientOpt = sessionService.getCurrentClient();
+        if (clientOpt.isEmpty() || !sessionService.isAuthenticated()) {
+            response.setHeader("HX-Redirect", "/login?next=/ask&msg=Please log in.");
+            return "empty";
+        }
+        AtprotoClient client = clientOpt.get();
+
+        model.addAttribute("isAdmin", UserInfo.isAdmin(dsl, client.getSession().getDid()));
+
         return "components/profileMenu";
     }
 }

@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.time.temporal.ChronoUnit;
 
 import static com.jcs.javacommunitysite.jooq.tables.Post.POST;
+import static com.jcs.javacommunitysite.jooq.tables.Tags.TAGS;
 import static com.jcs.javacommunitysite.jooq.tables.User.USER;
 import static com.jcs.javacommunitysite.jooq.tables.Reply.REPLY;
 import static dev.mccue.json.JsonDecoder.field;
@@ -118,11 +119,17 @@ public class AskPageController {
                         }
                         tagsMap.put(post.getAturi(), tagsList);
                     }
-                    
+
+                    // Get all tags
+                    var tags = dsl.select(TAGS.ATURI, TAGS.TAG_NAME)
+                            .from(TAGS)
+                            .fetchMap(TAGS.ATURI, TAGS.TAG_NAME);
+
                     model.addAttribute("userPosts", userPosts);
+                    model.addAttribute("tags", tags);
                     model.addAttribute("replyCountsMap", replyCountsMap);
                     model.addAttribute("timeTextsMap", timeTextsMap);
-                    model.addAttribute("tagsMap", tagsMap);
+                    model.addAttribute("postTags", tagsMap);
                     model.addAttribute("loggedIn", true);
                 } catch (IOException e) {
                     System.err.println("Error fetching user posts: " + e.getMessage());

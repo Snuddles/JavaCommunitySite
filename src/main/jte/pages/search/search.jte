@@ -1,6 +1,8 @@
 @import com.jcs.javacommunitysite.pages.searchpage.SearchForm
+@import java.util.Map
 
 @param SearchForm searchForm = null
+@param Map<String, String> tags = null
 @param String currentUserAvatarUrl = null
 
 @template.layout.main(
@@ -40,7 +42,7 @@
                         Tags
                         <img src="/arrow-down.svg" alt="" />
                     </button>
-                    @template.pages.search.components.tagSelectorPopup(id = "tagSelector")
+                    @template.pages.search.components.tagSelectorPopup(id = "tagSelector", tags = tags)
                 </div>
 
                 <div class="filter-button-container">
