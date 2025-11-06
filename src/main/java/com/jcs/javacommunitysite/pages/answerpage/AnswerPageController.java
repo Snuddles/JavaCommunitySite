@@ -55,10 +55,15 @@ public class AnswerPageController {
         model.addAttribute("replyForm", new NewReplyForm());
         model.addAttribute("filterMyPosts", filterMyPosts);
 
-        // Add current user's avatar URL to display in page header
-        getCurrentUserAvatarUrl().ifPresent(avatarUrl ->
+        // Add loggedIn status
+        model.addAttribute("loggedIn", sessionService.isAuthenticated());
+
+        // Only add avatar URL if user is authenticated
+        if (sessionService.isAuthenticated()) {
+            getCurrentUserAvatarUrl().ifPresent(avatarUrl -> 
             model.addAttribute("currentUserAvatarUrl", avatarUrl)
-        );
+            );
+        }
 
         if (sessionService.isAuthenticated()) {
             var clientOpt = sessionService.getCurrentClient();
@@ -206,15 +211,21 @@ public class AnswerPageController {
                 map.put("aturi", record.getAturi());
                 map.put("title", record.getTitle());
                 map.put("content", record.getContent());
-                // Extract raw JSON string from jOOQ JSON type to avoid serialization issues
                 map.put("tags", record.getTags() != null ? record.getTags().data() : null);
                 map.put("isDeleted", record.getIsDeleted());
                 map.put("isOpen", record.getIsOpen());
                 map.put("status", record.getStatus());
-                // Handle nullable timestamps
                 map.put("createdAt", record.getCreatedAt() != null ? record.getCreatedAt().toString() : null);
                 map.put("updatedAt", record.getUpdatedAt() != null ? record.getUpdatedAt().toString() : null);
                 map.put("ownerDid", record.getOwnerDid());
+                
+                // Add reply count
+                Integer replyCount = dsl.selectCount()
+                    .from(REPLY)
+                    .where(REPLY.ROOT_POST_ATURI.eq(record.getAturi()))
+                    .fetchOne(0, Integer.class);
+                map.put("countReplies", replyCount != null ? replyCount : 0);
+                
                 return map;
             })
             .toList();
@@ -257,6 +268,14 @@ public class AnswerPageController {
                 map.put("createdAt", record.getCreatedAt() != null ? record.getCreatedAt().toString() : null);
                 map.put("updatedAt", record.getUpdatedAt() != null ? record.getUpdatedAt().toString() : null);
                 map.put("ownerDid", record.getOwnerDid());
+                
+                // Add reply count
+                Integer replyCount = dsl.selectCount()
+                    .from(REPLY)
+                    .where(REPLY.ROOT_POST_ATURI.eq(record.getAturi()))
+                    .fetchOne(0, Integer.class);
+                map.put("countReplies", replyCount != null ? replyCount : 0);
+                
                 return map;
             })
             .toList();

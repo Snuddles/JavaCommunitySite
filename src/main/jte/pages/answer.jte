@@ -7,13 +7,15 @@
 @param String currentUserAvatarUrl = null
 @param List<Map<String, Object>> posts = null
 @param boolean filterMyPosts = false
+@param boolean loggedIn = false
 
 @template.layout.main(
     title = "Answer",
     content = @`
     <div class="page-content">
         @template.components.pageHeader(
-            content = @`<h2>Open Questions</h2>`
+            content = @`<h2>Open Questions</h2>`,
+            avatarUrl = loggedIn ? currentUserAvatarUrl : null
         )
 
         <!-- Filter Checkbox -->
@@ -42,7 +44,7 @@
                     aturi = new AtUri((String)post.get("aturi")),
                     title = (String)post.get("title"),
                     content = (String)post.get("content"),
-                    amtReplies = 0
+                    amtReplies = (post.get("countReplies") instanceof Number n ? n.intValue() : 0)
                 )
             @endfor
         @else
