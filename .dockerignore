@@ -15,6 +15,10 @@ build/
 .DS_Store
 Thumbs.db
 
+# macOS duplicate files
+*\ 2.*
+* 2.*
+
 # === Git ===
 .git
 .gitignore

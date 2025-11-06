@@ -17,8 +17,10 @@ list:
 
 # Start the existing container (does NOT recreate)
 start:
-	@echo "Starting ${SERVICE_NAME}..."
-	docker compose -f ${COMPOSE_FILE} up -d
+    @echo "Cleaning up duplicate files..."
+    @find . -name "* 2.*" -type f -delete || true
+    @echo "Starting ${SERVICE_NAME}..."
+    docker compose -f ${COMPOSE_FILE} up -d
 
 # Stop the running container (does NOT remove)
 stop:
@@ -26,7 +28,7 @@ stop:
 	docker compose -f ${COMPOSE_FILE} stop
 
 # Restart the container (stop + start)
-restart:
+restart: clean-duplicates
 	@echo "Restarting ${SERVICE_NAME}..."
 	docker compose -f ${COMPOSE_FILE} restart
 
@@ -70,10 +72,11 @@ build:
 	
 # Build and restart application (most useful for development)
 rebuild:
-	@echo "Building and restarting ${SERVICE_NAME}..."
-	docker compose -f ${COMPOSE_FILE} exec ${SERVICE_NAME} mvn clean
-	docker compose -f ${COMPOSE_FILE} exec ${SERVICE_NAME} mvn compile
-	docker compose -f ${COMPOSE_FILE} restart ${SERVICE_NAME}
+    @echo "Cleaning duplicate files..."
+    @find . -name "* 2.*" -type f -delete || true
+    @echo "Cleaning containers and rebuilding..."
+    docker compose -f ${COMPOSE_FILE} down
+    docker compose -f ${COMPOSE_FILE} up -d --build
 
 
 
@@ -111,3 +114,8 @@ logs-prod:
 package:
 	@echo "Packaging ${SERVICE_NAME} (for production)..."
 	docker compose -f ${COMPOSE_PROD_FILE} exec ${SERVICE_NAME} mvn package
+
+# Clean duplicate files created by macOS
+clean-duplicates:
+	@echo "Cleaning duplicate files..."
+	find . -name "* 2.*" -type f -delete

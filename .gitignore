@@ -52,3 +52,8 @@ application.properties
 # === OS/System Files ===
 .DS_Store
 Thumbs.db
+
+# macOS duplicate files
+*\ 2.*
+* 2.*
+
