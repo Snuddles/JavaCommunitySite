@@ -4,16 +4,20 @@ import com.jcs.javacommunitysite.JavaCommunitySiteApplication;
 import com.jcs.javacommunitysite.atproto.AtUri;
 import com.jcs.javacommunitysite.atproto.records.QuestionRecord;
 import com.jcs.javacommunitysite.util.UserInfo;
+
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+
 import com.jcs.javacommunitysite.atproto.service.AtprotoSessionService;
 import com.jcs.javacommunitysite.atproto.AtprotoClient;
 import com.jcs.javacommunitysite.atproto.AtprotoUtil;
+
 import dev.mccue.json.Json;
 
 import java.io.IOException;
@@ -24,10 +28,12 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.time.temporal.ChronoUnit;
 
+import static com.jcs.javacommunitysite.jooq.tables.HiddenPost.HIDDEN_POST;
 import static com.jcs.javacommunitysite.jooq.tables.Post.POST;
 import static com.jcs.javacommunitysite.jooq.tables.Tags.TAGS;
 import static com.jcs.javacommunitysite.jooq.tables.User.USER;
 import static com.jcs.javacommunitysite.jooq.tables.Reply.REPLY;
+
 import static dev.mccue.json.JsonDecoder.field;
 import static dev.mccue.json.JsonDecoder.string;
 import static dev.mccue.json.JsonDecoder.array;
@@ -63,6 +69,11 @@ public class AskPageController {
                     var userPosts = dsl.selectFrom(POST)
                             .where(POST.OWNER_DID.eq(userDid))
                             .and(POST.IS_DELETED.eq(false))
+                            .andNotExists(
+                                dsl.selectOne()
+                                    .from(HIDDEN_POST)
+                                    .where(HIDDEN_POST.POST_ATURI.eq(POST.ATURI))
+                            )
                             .orderBy(POST.CREATED_AT.desc())
                             .fetch();
                     

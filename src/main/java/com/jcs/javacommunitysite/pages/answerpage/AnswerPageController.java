@@ -21,6 +21,7 @@ import com.jcs.javacommunitysite.atproto.service.AtprotoSessionService;
 import static com.jcs.javacommunitysite.jooq.tables.Post.POST;
 import static com.jcs.javacommunitysite.jooq.tables.Reply.REPLY;
 import static com.jcs.javacommunitysite.jooq.tables.User.USER;
+import static com.jcs.javacommunitysite.jooq.tables.HiddenPost.HIDDEN_POST;
 
 import static dev.mccue.json.JsonDecoder.field;
 import static dev.mccue.json.JsonDecoder.string;
@@ -197,6 +198,12 @@ public class AnswerPageController {
      */
     private List<Map<String, Object>> getAllPosts() {
         var records = dsl.selectFrom(POST)
+            .whereNotExists(
+                //Exclude posts that are in the hidden table
+                dsl.selectOne()
+                    .from(HIDDEN_POST)
+                    .where(HIDDEN_POST.POST_ATURI.eq(POST.ATURI))
+            )
             .orderBy(POST.CREATED_AT.desc())
             .fetch();
         
@@ -243,6 +250,11 @@ public class AnswerPageController {
                     .where(REPLY.ROOT_POST_ATURI.eq(POST.ATURI))  // Match reply to post
                     .and(REPLY.OWNER_DID.eq(userDid))              // Filter by user's DID
             )
+            .and(POST.ATURI.notIn(
+                //Exclude posts that are in the hidden table
+                dsl.select(HIDDEN_POST.POST_ATURI)
+                    .from(HIDDEN_POST)
+            ))
             .orderBy(POST.CREATED_AT.desc())
             .fetch();
         
