@@ -16,8 +16,7 @@
                 <p class="postContent">${post.get("content")}</p>
             </div>
             <div class="userReply">
-                <div class="arrow-right"></div>
-                <p class="replyContent">${r.get("content")}</p>
+                <p class="replyContent">&#x21AA; ${r.get("content")}</p>
             </div>
             @if(tagsList != null && !tagsList.isEmpty())
                 <div class="tags">

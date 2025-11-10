@@ -1,9 +1,10 @@
 @import com.jcs.javacommunitysite.util.UserInfo
 
-@param String currentUserHandle = null
-@param String displayName = null
 @param String description = null
+@param UserInfo loggedInUser
 @param UserInfo user
+
+!{String displayName = !user.displayName.isBlank() ? user.displayName : user.handle;}
 
 @template.layout.main(
     title = "Profile Page",
@@ -12,7 +13,7 @@
 
         @template.components.pageHeader(
             content = @`<h2>Profile</h2>`,
-            user = user,
+            user = loggedInUser,
         )
 
         <div class="user-info-container">
@@ -21,20 +22,27 @@
                     <img src="${user.avatarUri}" alt="Profile Avatar" style="width: 70px; height: 70px; border-radius: 50%;">
                 </a>
                 <div class="name-handle">
-                    <h4>${displayName}</h4>
-                    <p>@${currentUserHandle}</p>
+                    <div class="top-bar">
+                        <h4>${displayName}</h4>
+                        @if(user.isAdmin)
+                            <div class="tag">Admin</div>
+                        @endif
+                    </div>
+                    <p>@${user.handle}</p>
                 </div>
             </div>
-            <div class="right-side-button-container">
-                <button class="button" onclick="window.open('https://bsky.app/profile/${currentUserHandle}', '_blank')">Edit on Bluesky</button>
-            </div>
+            @if(user.isSelf)
+                <div class="right-side-button-container">
+                    <button class="button" onclick="window.open('https://bsky.app/profile/${user.handle}', '_blank')">Edit on Bluesky</button>
+                </div>
+            @endif
         </div>
-        <p>${description}</p>
+        <p>${user.bio}</p>
 
         <div class="divider"></div>
 
         <div class="pfp-tabs">
-            <button hx-get="/pfp/tab/questions"
+            <button hx-get="/pfp/tab/questions?did=${user.did}"
                     hx-target="#tab-content"
                     class="button active"
                     hx-on-click="
@@ -42,7 +50,7 @@
                         .forEach(b => b.classList.remove('active'));
                         this.classList.add('active');"
             >Questions</button>
-            <button hx-get="/pfp/tab/answers"
+            <button hx-get="/pfp/tab/answers?did=${user.did}"
                     hx-target="#tab-content"
                     class="button"
                     hx-on-click="
@@ -53,7 +61,7 @@
         </div>
 
         <div id="tab-content"
-             hx-get="/pfp/tab/questions"
+             hx-get="/pfp/tab/questions?did=${user.did}"
              hx-trigger="load"
              hx-swap="innerHTML">
         </div>

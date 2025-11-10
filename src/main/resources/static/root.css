@@ -232,7 +232,12 @@ ul, ol {
 
                 & .handle {
                     color: var(--subtext-color);
-                    font-size: var(--small-text)
+                    font-size: var(--small-text);
+                    text-decoration: none;
+
+                    &:hover {
+                        text-decoration: underline;
+                    }
                 }
             }
 
@@ -1150,6 +1155,12 @@ pre {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+
+    & .top-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
 
     & .not-the-button {
         display: flex;

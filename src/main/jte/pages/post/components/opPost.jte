@@ -37,7 +37,7 @@
                         <div class="tag">Admin</div>
                     @endif
                 </div>
-                <p class="handle">@${user.handle}</p>
+                <a class="handle" href="/pfp/${user.did}">@${user.handle}</a>
             </div>
             <div class="time-info">
                 ${TimeUtil.calculateTimeText(post.getCreatedAt())}

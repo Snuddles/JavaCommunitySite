@@ -4,7 +4,6 @@ import com.jcs.javacommunitysite.atproto.service.AtprotoSessionService;
 import org.jooq.DSLContext;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,14 +15,16 @@ public class UserInfo {
     public String avatarUri;
     public String displayName;
     public String did;
+    public String bio;
     public boolean isSelf;
     public boolean isAdmin;
 
-    public UserInfo(String handle, String avatarUri, String displayName, String did, boolean isSelf, boolean isAdmin) {
+    public UserInfo(String handle, String avatarUri, String displayName, String did, String bio, boolean isSelf, boolean isAdmin) {
         this.handle = handle;
         this.avatarUri = avatarUri;
         this.displayName = displayName;
         this.did = did;
+        this.bio = bio;
         this.isSelf = isSelf;
         this.isAdmin = isAdmin;
     }
@@ -55,6 +56,7 @@ public class UserInfo {
                     user.getAvatarBloburl(),
                     user.getDisplayName(),
                     user.getDid(),
+                    user.getDescription(),
                     selfDid != null && user.getDid().equals(selfDid),
                     adminList.contains(user.getDid())
             ));
@@ -84,6 +86,7 @@ public class UserInfo {
                 user.getAvatarBloburl(),
                 user.getDisplayName(),
                 user.getDid(),
+                user.getDescription(),
                 selfDid != null && selfDid.equals(did),
                 isAdmin(dsl, did)
         );
