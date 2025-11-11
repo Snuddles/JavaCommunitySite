@@ -15,6 +15,9 @@
     </div>
     <div class="top-right-buttons">
         @if(user != null)
+            <a class="button icon" href="/notifications">
+                <img src="/bell.svg" alt="Notifications" />
+            </a>
             <div class="pfp-container">
                 <img
                     id="profileMenu-button"

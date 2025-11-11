@@ -766,6 +766,7 @@ pre {
     & .top-right-buttons {
         display: flex;
         align-items: center;
+        gap: 15px;
     }
 }
 
@@ -1253,8 +1254,8 @@ pre {
 }
 
 .pfp-container {
-   position: relative;
-   display: inline-block;
+    display: flex;
+    position: relative;
 
     & img:hover {
         cursor: pointer;
@@ -1350,6 +1351,10 @@ pre {
 }
 
 .profile-menu-popup-container {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 100%;
+
     & .popup-menu {
         min-width: 200px;
 
@@ -1369,6 +1374,38 @@ pre {
                 font-weight: bold;
             }
         }
+    }
+}
+
+.notifications {
+    gap: 0;
+}
+
+.notification {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 0;
+
+    & .notif-content {
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+        flex-grow: 1;
+
+        & p {
+           color: var(--subtext-color);
+        }
+    }
+
+    & .action-buttons {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    & + .notification {
+        border-top: solid 1px var(--border-color);
     }
 }
 

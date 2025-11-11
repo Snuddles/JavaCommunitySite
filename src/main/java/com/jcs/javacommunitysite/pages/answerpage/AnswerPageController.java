@@ -206,6 +206,15 @@ public class AnswerPageController {
             )
             .orderBy(POST.CREATED_AT.desc())
             .fetch();
+
+        System.out.println(dsl.selectFrom(POST)
+                .whereNotExists(
+                        //Exclude posts that are in the hidden table
+                        dsl.selectOne()
+                                .from(HIDDEN_POST)
+                                .where(HIDDEN_POST.POST_ATURI.eq(POST.ATURI))
+                )
+                .orderBy(POST.CREATED_AT.desc()).getSQL());
         
         return records.stream()
             .map(record -> {
