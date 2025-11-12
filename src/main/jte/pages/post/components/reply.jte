@@ -8,6 +8,8 @@
 @param UserInfo user
 @param boolean isHidden = false
 @param boolean selfHighlight = false
+@param boolean paginationTrigger = false
+@param int nextPage = -1
 
 !{AtUri root = new AtUri(reply.getRootPostAturi());}
 !{
@@ -68,7 +70,17 @@
             </div>
         </div>
 
-        <div class="runner"></div>
+        @if(paginationTrigger)
+            <div
+                class="runner"
+                hx-get="/post/${root.getDid()}/${root.getRecordKey()}/replies?page=${nextPage}"
+                hx-trigger="intersect once"
+                hx-target="#new-reply-insert-point"
+                hx-swap="outerHTML"
+            ></div>
+        @else
+            <div class="runner"></div>
+        @endif
     </div>
 
     @if(selfHighlight)

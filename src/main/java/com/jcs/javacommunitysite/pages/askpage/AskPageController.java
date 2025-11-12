@@ -13,6 +13,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.jcs.javacommunitysite.atproto.service.AtprotoSessionService;
 import com.jcs.javacommunitysite.atproto.AtprotoClient;
@@ -54,6 +55,9 @@ public class AskPageController {
             Model model
     ) {
         model.addAttribute("postForm", new NewPostForm());
+
+        int pageSize = 20;
+        int page = 1;
         
         // Fetch user's posts if authenticated
         if (sessionService.isAuthenticated()) {
@@ -65,7 +69,19 @@ public class AskPageController {
                     var profile = AtprotoUtil.getBskyProfile(handle);
                     String userDid = profile.get("did").toString().replace("\"", "");
                     
-                    // Query user's posts from database
+                    // Total count
+                    int totalPosts = dsl.selectCount()
+                            .from(POST)
+                            .where(POST.OWNER_DID.eq(userDid))
+                            .and(POST.IS_DELETED.eq(false))
+                            .andNotExists(
+                                dsl.selectOne()
+                                    .from(HIDDEN_POST)
+                                    .where(HIDDEN_POST.POST_ATURI.eq(POST.ATURI))
+                            )
+                            .fetchOne(0, int.class);
+
+                    // Query first page of user's posts from database
                     var userPosts = dsl.selectFrom(POST)
                             .where(POST.OWNER_DID.eq(userDid))
                             .and(POST.IS_DELETED.eq(false))
@@ -75,6 +91,8 @@ public class AskPageController {
                                     .where(HIDDEN_POST.POST_ATURI.eq(POST.ATURI))
                             )
                             .orderBy(POST.CREATED_AT.desc())
+                            .limit(pageSize)
+                            .offset((page - 1) * pageSize)
                             .fetch();
                     
                     // Create a map of post ATURI to reply count
@@ -132,11 +150,15 @@ public class AskPageController {
                             .from(TAGS)
                             .fetchMap(TAGS.ATURI, TAGS.TAG_NAME);
 
+                    boolean hasMore = totalPosts > pageSize;
+
                     model.addAttribute("userPosts", userPosts);
                     model.addAttribute("tags", tags);
                     model.addAttribute("replyCountsMap", replyCountsMap);
                     model.addAttribute("timeTextsMap", timeTextsMap);
                     model.addAttribute("postTags", tagsMap);
+                    model.addAttribute("hasMoreUserPosts", hasMore);
+                    model.addAttribute("nextPageUserPosts", 2);
                     model.addAttribute("loggedIn", true);
                     model.addAttribute("user", UserInfo.getSelfFromDb(dsl, sessionService));
                 } catch (IOException e) {
@@ -148,6 +170,106 @@ public class AskPageController {
         }
         
         return "pages/ask";
+    }
+
+    @GetMapping("/ask/htmx/myPosts")
+    public String getMoreMyPosts(Model model,
+                                 HttpServletResponse response,
+                                 @RequestParam int page) {
+        if (!sessionService.isAuthenticated()) {
+            return ""; // not logged in, nothing to load
+        }
+        var clientOpt = sessionService.getCurrentClient();
+        if (clientOpt.isEmpty()) {
+            return "";
+        }
+        try {
+            int pageSize = 20;
+            AtprotoClient client = clientOpt.get();
+            String handle = client.getSession().getHandle();
+            var profile = AtprotoUtil.getBskyProfile(handle);
+            String userDid = profile.get("did").toString().replace("\"", "");
+
+            var totalPosts = dsl.selectCount()
+                    .from(POST)
+                    .where(POST.OWNER_DID.eq(userDid))
+                    .and(POST.IS_DELETED.eq(false))
+                    .andNotExists(
+                            dsl.selectOne()
+                                    .from(HIDDEN_POST)
+                                    .where(HIDDEN_POST.POST_ATURI.eq(POST.ATURI))
+                    )
+                    .fetchOne(0, int.class);
+
+            var userPosts = dsl.selectFrom(POST)
+                    .where(POST.OWNER_DID.eq(userDid))
+                    .and(POST.IS_DELETED.eq(false))
+                    .andNotExists(
+                            dsl.selectOne()
+                                    .from(HIDDEN_POST)
+                                    .where(HIDDEN_POST.POST_ATURI.eq(POST.ATURI))
+                    )
+                    .orderBy(POST.CREATED_AT.desc())
+                    .limit(pageSize)
+                    .offset((page - 1) * pageSize)
+                    .fetch();
+
+            var replyCountsMap = new HashMap<String, Integer>();
+            var timeTextsMap = new HashMap<String, String>();
+            var tagsMap = new HashMap<String, List<String>>();
+
+            for (var post : userPosts) {
+                int replyCount = dsl.selectCount()
+                        .from(REPLY)
+                        .where(REPLY.ROOT_POST_ATURI.eq(post.getAturi()))
+                        .fetchOne(0, int.class);
+                replyCountsMap.put(post.getAturi(), replyCount);
+
+                var now = OffsetDateTime.now();
+                var createdAt = post.getCreatedAt();
+                var yearsBetween = ChronoUnit.YEARS.between(createdAt, now);
+                var daysBetween = ChronoUnit.DAYS.between(createdAt, now);
+                var hoursBetween = ChronoUnit.HOURS.between(createdAt, now);
+                var minutesBetween = ChronoUnit.MINUTES.between(createdAt, now);
+
+                String timeText;
+                if (yearsBetween > 0) {
+                    timeText = yearsBetween + (yearsBetween == 1 ? " year ago" : " years ago");
+                } else if (daysBetween > 0) {
+                    timeText = daysBetween + (daysBetween == 1 ? " day ago" : " days ago");
+                } else if (hoursBetween > 0) {
+                    timeText = hoursBetween + (hoursBetween == 1 ? " hour ago" : " hours ago");
+                } else if (minutesBetween > 0) {
+                    timeText = minutesBetween + (minutesBetween == 1 ? " minute ago" : " minutes ago");
+                } else {
+                    timeText = "Just now";
+                }
+                timeTextsMap.put(post.getAturi(), timeText);
+
+                var tagsList = new ArrayList<String>();
+                if (post.getTags() != null) {
+                    try {
+                        var tagsJson = Json.read(post.getTags().data());
+                        var tagsArray = array(string()).decode(tagsJson);
+                        tagsList.addAll(tagsArray);
+                    } catch (Exception ignored) {}
+                }
+                tagsMap.put(post.getAturi(), tagsList);
+            }
+
+            boolean hasMore = totalPosts > (page * pageSize);
+
+            model.addAttribute("userPosts", userPosts);
+            model.addAttribute("replyCountsMap", replyCountsMap);
+            model.addAttribute("timeTextsMap", timeTextsMap);
+            model.addAttribute("postTags", tagsMap);
+            model.addAttribute("hasMoreUserPosts", hasMore);
+            model.addAttribute("nextPageUserPosts", page + 1);
+
+            return "pages/ask/htmx/myPosts";
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     @PostMapping("/ask")

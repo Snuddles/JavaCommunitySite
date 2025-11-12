@@ -6,6 +6,8 @@
 @param com.jcs.javacommunitysite.pages.answerpage.NewReplyForm replyForm
 @param List<Map<String, Object>> posts = null
 @param boolean filterMyPosts = false
+@param boolean hasMoreAnswerPosts = false
+@param int nextPageAnswerPosts = 2
 @param boolean loggedIn = false
 @param UserInfo user = null
 
@@ -15,7 +17,7 @@
     <div class="page-content">
         @template.components.pageHeader(
             content = @`<h2>Open Questions</h2>`,
-            user = user,
+            user = user
         )
 
         <!-- Filter Checkbox -->
@@ -47,6 +49,16 @@
                     amtReplies = (post.get("countReplies") instanceof Number n ? n.intValue() : 0)
                 )
             @endfor
+            @if(hasMoreAnswerPosts)
+                <div
+                    id="answer-posts-insert-point"
+                    style="width: 0; height: 0;"
+                    hx-get="/answer/htmx/posts?page=${nextPageAnswerPosts}&filterMyPosts=${filterMyPosts}"
+                    hx-trigger="intersect once"
+                    hx-target="#answer-posts-insert-point"
+                    hx-swap="outerHTML"
+                ></div>
+            @endif
         @else
             <p>No posts found.</p>
         @endif

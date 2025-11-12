@@ -30,11 +30,15 @@ content = @`
             isHidden = isPostHidden
         )
 
+        !{int i = 1;}
         @for(var reply : postReplies)
             @template.pages.post.components.reply(
                 reply=reply,
-                user=users.get(reply.getOwnerDid())
+                user=users.get(reply.getOwnerDid()),
+                paginationTrigger = (i == postReplies.length),
+                nextPage = 2,
             )
+            !{i++;}
         @endfor
 
         <div id="new-reply-insert-point"></div>

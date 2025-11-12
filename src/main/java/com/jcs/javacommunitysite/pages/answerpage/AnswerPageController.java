@@ -57,8 +57,14 @@ public class AnswerPageController {
         model.addAttribute("replyForm", new NewReplyForm());
         model.addAttribute("filterMyPosts", filterMyPosts);
 
+        int pageSize = 20;
+        int page = 1;
+
         // Add loggedIn status
         model.addAttribute("loggedIn", sessionService.isAuthenticated());
+
+        List<Map<String, Object>> posts;
+        int totalCount;
 
         if (sessionService.isAuthenticated()) {
             var clientOpt = sessionService.getCurrentClient();
@@ -71,25 +77,74 @@ public class AnswerPageController {
                     String userDid = profile.get("did").toString().replace("\"", "");
 
                     // Fetch posts based on filter preference
-                    // If filterMyPosts is true, only show posts user has participated in
-                    // Otherwise, show all posts ordered by most recent
-                    List<Map<String, Object>> posts = filterMyPosts 
-                        ? getPostsUserParticipatedIn(userDid)
-                        : getAllPosts();
+                    if (filterMyPosts) {
+                        totalCount = getPostsUserParticipatedInCount(userDid);
+                        posts = getPostsUserParticipatedInPaged(userDid, pageSize, (page - 1) * pageSize);
+                    } else {
+                        totalCount = getAllPostsCount();
+                        posts = getAllPostsPaged(pageSize, (page - 1) * pageSize);
+                    }
                     
                     model.addAttribute("posts", posts);
                     model.addAttribute("userDid", userDid);
                     model.addAttribute("user", UserInfo.getSelfFromDb(dsl, sessionService));
                 } catch (Exception e) {
                     System.err.println("Error fetching posts: " + e.getMessage());
+                    posts = List.of();
+                    totalCount = 0;
                 }
+            } else {
+                posts = List.of();
+                totalCount = 0;
             }
         } else {
             // Unauthenticated users see all posts
-            model.addAttribute("posts", getAllPosts());
+            totalCount = getAllPostsCount();
+            posts = getAllPostsPaged(pageSize, (page - 1) * pageSize);
         }
+
+        boolean hasMore = totalCount > pageSize;
+        model.addAttribute("hasMoreAnswerPosts", hasMore);
+        model.addAttribute("nextPageAnswerPosts", 2);
         
         return "pages/answer";
+    }
+
+    @GetMapping("/answer/htmx/posts")
+    public String getMoreAnswerPosts(Model model,
+                                     @RequestParam(name = "page") int page,
+                                     @RequestParam(name = "filterMyPosts", defaultValue = "false") boolean filterMyPosts) {
+        int pageSize = 20;
+        try {
+            List<Map<String, Object>> posts;
+            int totalCount;
+            if (filterMyPosts && sessionService.isAuthenticated()) {
+                var clientOpt = sessionService.getCurrentClient();
+                if (clientOpt.isPresent()) {
+                    var client = clientOpt.get();
+                    String handle = client.getSession().getHandle();
+                    var profile = AtprotoUtil.getBskyProfile(handle);
+                    String userDid = profile.get("did").toString().replace("\"", "");
+                    totalCount = getPostsUserParticipatedInCount(userDid);
+                    posts = getPostsUserParticipatedInPaged(userDid, pageSize, (page - 1) * pageSize);
+                } else {
+                    totalCount = getAllPostsCount();
+                    posts = getAllPostsPaged(pageSize, (page - 1) * pageSize);
+                }
+            } else {
+                totalCount = getAllPostsCount();
+                posts = getAllPostsPaged(pageSize, (page - 1) * pageSize);
+            }
+
+            boolean hasMore = totalCount > (page * pageSize);
+            model.addAttribute("posts", posts);
+            model.addAttribute("hasMoreAnswerPosts", hasMore);
+            model.addAttribute("nextPageAnswerPosts", page + 1);
+            model.addAttribute("filterMyPosts", filterMyPosts);
+            return "pages/answer/htmx/posts";
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     /**
@@ -196,6 +251,51 @@ public class AnswerPageController {
      * 
      * @return List of all posts as Maps
      */
+    private int getAllPostsCount() {
+        return dsl.selectCount()
+            .from(POST)
+            .whereNotExists(
+                dsl.selectOne()
+                    .from(HIDDEN_POST)
+                    .where(HIDDEN_POST.POST_ATURI.eq(POST.ATURI))
+            )
+            .fetchOne(0, int.class);
+    }
+
+    private List<Map<String, Object>> getAllPostsPaged(int limit, int offset) {
+        var records = dsl.selectFrom(POST)
+            .whereNotExists(
+                dsl.selectOne()
+                    .from(HIDDEN_POST)
+                    .where(HIDDEN_POST.POST_ATURI.eq(POST.ATURI))
+            )
+            .orderBy(POST.CREATED_AT.desc())
+            .limit(limit)
+            .offset(offset)
+            .fetch();
+        return records.stream()
+            .map(record -> {
+                Map<String, Object> map = new HashMap<>();
+                map.put("aturi", record.getAturi());
+                map.put("title", record.getTitle());
+                map.put("content", record.getContent());
+                map.put("tags", record.getTags() != null ? record.getTags().data() : null);
+                map.put("isDeleted", record.getIsDeleted());
+                map.put("isOpen", record.getIsOpen());
+                map.put("status", record.getStatus());
+                map.put("createdAt", record.getCreatedAt() != null ? record.getCreatedAt().toString() : null);
+                map.put("updatedAt", record.getUpdatedAt() != null ? record.getUpdatedAt().toString() : null);
+                map.put("ownerDid", record.getOwnerDid());
+                Integer replyCount = dsl.selectCount()
+                    .from(REPLY)
+                    .where(REPLY.ROOT_POST_ATURI.eq(record.getAturi()))
+                    .fetchOne(0, Integer.class);
+                map.put("countReplies", replyCount != null ? replyCount : 0);
+                return map;
+            })
+            .toList();
+    }
+
     private List<Map<String, Object>> getAllPosts() {
         var records = dsl.selectFrom(POST)
             .whereNotExists(
@@ -250,6 +350,63 @@ public class AnswerPageController {
      * @param userDid The DID of the user to filter posts for
      * @return List of posts the user has participated in
      */
+    private int getPostsUserParticipatedInCount(String userDid) {
+        return dsl.selectCount()
+            .from(POST)
+            .whereExists(
+                dsl.selectOne()
+                    .from(REPLY)
+                    .where(REPLY.ROOT_POST_ATURI.eq(POST.ATURI))
+                    .and(REPLY.OWNER_DID.eq(userDid))
+            )
+            .and(POST.ATURI.notIn(
+                dsl.select(HIDDEN_POST.POST_ATURI)
+                    .from(HIDDEN_POST)
+            ))
+            .fetchOne(0, int.class);
+    }
+
+    private List<Map<String, Object>> getPostsUserParticipatedInPaged(String userDid, int limit, int offset) {
+        var records = dsl.selectFrom(POST)
+            .whereExists(
+                // Subquery: check if there's a reply from this user on this post
+                dsl.selectOne()
+                    .from(REPLY)
+                    .where(REPLY.ROOT_POST_ATURI.eq(POST.ATURI))  // Match reply to post
+                    .and(REPLY.OWNER_DID.eq(userDid))              // Filter by user's DID
+            )
+            .and(POST.ATURI.notIn(
+                //Exclude posts that are in the hidden table
+                dsl.select(HIDDEN_POST.POST_ATURI)
+                    .from(HIDDEN_POST)
+            ))
+            .orderBy(POST.CREATED_AT.desc())
+            .limit(limit)
+            .offset(offset)
+            .fetch();
+        return records.stream()
+            .map(record -> {
+                Map<String, Object> map = new HashMap<>();
+                map.put("aturi", record.getAturi());
+                map.put("title", record.getTitle());
+                map.put("content", record.getContent());
+                map.put("tags", record.getTags() != null ? record.getTags().data() : null);
+                map.put("isDeleted", record.getIsDeleted());
+                map.put("isOpen", record.getIsOpen());
+                map.put("status", record.getStatus());
+                map.put("createdAt", record.getCreatedAt() != null ? record.getCreatedAt().toString() : null);
+                map.put("updatedAt", record.getUpdatedAt() != null ? record.getUpdatedAt().toString() : null);
+                map.put("ownerDid", record.getOwnerDid());
+                Integer replyCount = dsl.selectCount()
+                    .from(REPLY)
+                    .where(REPLY.ROOT_POST_ATURI.eq(record.getAturi()))
+                    .fetchOne(0, Integer.class);
+                map.put("countReplies", replyCount != null ? replyCount : 0);
+                return map;
+            })
+            .toList();
+    }
+
     private List<Map<String, Object>> getPostsUserParticipatedIn(String userDid) {
         var records = dsl.selectFrom(POST)
             .whereExists(

@@ -33,14 +33,24 @@ public class ProfilePageController {
     }
 
     @GetMapping("/pfp/tab/questions")
-    public String q(@RequestParam String did, Model model) {
+    public String q(@RequestParam String did, @RequestParam(name = "page", defaultValue = "1") int page, Model model) {
         model.addAttribute("postForm", new NewPostForm());
+        int pageSize = 20;
         try {
-            // Query user's posts from database
+            // Total count
+            int totalPosts = dsl.selectCount()
+                    .from(POST)
+                    .where(POST.OWNER_DID.eq(did))
+                    .and(POST.IS_DELETED.eq(false))
+                    .fetchOne(0, int.class);
+
+            // Query paged user's posts from database
             var userPosts = dsl.selectFrom(POST)
                     .where(POST.OWNER_DID.eq(did))
                     .and(POST.IS_DELETED.eq(false))
                     .orderBy(POST.CREATED_AT.desc())
+                    .limit(pageSize)
+                    .offset((page - 1) * pageSize)
                     .fetch();
 
             // Create a map of post ATURI to reply count
@@ -74,24 +84,38 @@ public class ProfilePageController {
                 tagsMap.put(post.getAturi(), tagsList);
             }
 
+            boolean hasMore = totalPosts > (page * pageSize);
+
             model.addAttribute("userPosts", userPosts);
             model.addAttribute("replyCountsMap", replyCountsMap);
             model.addAttribute("timeTextsMap", timeTextsMap);
             model.addAttribute("tagsMap", tagsMap);
+            model.addAttribute("hasMoreUserPosts", hasMore);
+            model.addAttribute("nextPageUserPosts", page + 1);
+            model.addAttribute("did", did);
         } catch (Exception e) {
             System.err.println("Error fetching user posts: " + e.getMessage());
         }
 
-        return "components/userQuestions";
+        // Use a single template for both initial and subsequent loads
+        return "pages/pfp/tab/questions";
     }
 
     @GetMapping("/pfp/tab/answers")
-    public String a(@RequestParam String did, Model m) {
+    public String a(@RequestParam String did, @RequestParam(name = "page", defaultValue = "1") int page, Model m) {
+        int pageSize = 20;
         try {
+            int totalReplies = dsl.selectCount()
+                    .from(REPLY)
+                    .where(REPLY.OWNER_DID.eq(did))
+                    .fetchOne(0, int.class);
+
             var userReplies = dsl.selectFrom(REPLY)
                 .where(REPLY.OWNER_DID.eq(did))
                 .orderBy(REPLY.CREATED_AT.desc())
-                            .fetch();
+                .limit(pageSize)
+                .offset((page - 1) * pageSize)
+                .fetch();
 
             var replies = new ArrayList<String>();
             var replyData = new HashMap<String, Map<String, String>>();
@@ -129,32 +153,24 @@ public class ProfilePageController {
                         postMap.put("tags", "[]");
                     }
 
-                    var tagsList = new ArrayList<String>();
-                    if (originalPost.getTags() != null) {
-                        try {
-                            // Parse JSON array using dev.mccue.json
-                            var tagsJson = Json.read(originalPost.getTags().data());
-                            var tagsArray = array(string()).decode(tagsJson);
-                            tagsList.addAll(tagsArray);
-                        } catch (Exception e) {
-                            System.err.println("Error parsing tags JSON for post " + originalPost.getAturi() + ": " + e.getMessage());
-                        }
-                    }
-                    m.addAttribute("tagsList", tagsList);
-
                     postData.put(reply.getAturi(), postMap);
                 }
             }
 
+            boolean hasMore = totalReplies > (page * pageSize);
+
             m.addAttribute("replies", replies);
             m.addAttribute("replyData", replyData);
             m.addAttribute("postData", postData);
+            m.addAttribute("hasMoreUserAnswers", hasMore);
+            m.addAttribute("nextPageUserAnswers", page + 1);
+            m.addAttribute("did", did);
 
+            return "pages/pfp/tab/answers";
         } catch (Exception e) {
             System.err.println("Error fetching user replies: " + e.getMessage());
+            return "";
         }
-
-        return "components/userAnswers";
     }
 
 

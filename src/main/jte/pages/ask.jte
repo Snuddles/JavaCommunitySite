@@ -9,6 +9,8 @@
 @param Map<String, String> timeTextsMap = null
 @param Map<String, String> tags = null
 @param Map<String, List<String>> postTags = null
+@param boolean hasMoreUserPosts = false
+@param int nextPageUserPosts = 2
 @param boolean loggedIn
 @param UserInfo user = null
 
@@ -74,6 +76,16 @@
                         tags = (tags != null && postTags.containsKey(post.getAturi())) ? postTags.get(post.getAturi()) : null
                     )
                 @endfor
+                @if(hasMoreUserPosts)
+                    <div
+                        id="my-questions-insert-point"
+                        style="width: 0; height: 0;"
+                        hx-get="/ask/htmx/myPosts?page=${nextPageUserPosts}"
+                        hx-trigger="intersect once"
+                        hx-target="#my-questions-insert-point"
+                        hx-swap="outerHTML"
+                    ></div>
+                @endif
             @else
                 <p>You haven't asked any questions yet. Ask your first question above!</p>
             @endif

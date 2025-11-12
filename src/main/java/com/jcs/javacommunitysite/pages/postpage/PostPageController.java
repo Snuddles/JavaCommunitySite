@@ -73,6 +73,7 @@
              postReplies = dsl.selectFrom(REPLY)
                      .where(REPLY.ROOT_POST_ATURI.eq(aturi.toString()))
                      .orderBy(REPLY.CREATED_AT.asc())
+                     .limit(20)
                      .fetchArray();
          } catch (Exception e) {
              return ErrorUtil.createErrorToast(response, model, "Failed to get replies. Please try again later.");
@@ -93,6 +94,46 @@
          model.addAttribute("isPostHidden", ModUtil.isPostHidden(dsl, aturi));
 
          return "pages/post/page";
+     }
+
+     @GetMapping("/post/{userDid}/{postRKey}/replies")
+     public String getReplies(Model model,
+                              HttpServletResponse response,
+                              @PathVariable("userDid") String userDid,
+                              @PathVariable("postRKey") String postRKey,
+                              @RequestParam int page) {
+         AtUri aturi = new AtUri(userDid, QuestionRecord.recordCollection, postRKey);
+
+         try {
+             var replies = dsl.selectFrom(REPLY)
+                     .where(REPLY.ROOT_POST_ATURI.eq(aturi.toString()))
+                     .orderBy(REPLY.CREATED_AT.asc())
+                     .limit(20)
+                     .offset((page - 1) * 20)
+                     .fetchArray();
+
+             var totalReplies = dsl.selectCount()
+                     .from(REPLY)
+                     .where(REPLY.ROOT_POST_ATURI.eq(aturi.toString()))
+                     .fetchOne(0, int.class);
+
+             boolean hasMoreReplies = totalReplies > ((page + 1) * 20);
+
+             Set<String> userDids = new HashSet<>();
+             for (var reply : replies) {
+                 userDids.add(reply.getOwnerDid());
+             }
+             var usersMap = UserInfo.getFromDb(dsl, sessionService, userDids);
+
+             model.addAttribute("replies", replies);
+             model.addAttribute("users", usersMap);
+             model.addAttribute("nextPage", page + 1);
+             model.addAttribute("hasMoreReplies", hasMoreReplies);
+
+             return "pages/post/htmx/replies";
+         } catch (Exception e) {
+             return ErrorUtil.createErrorToast(response, model, "Failed to load more replies. Please try again later.");
+         }
      }
 
      @PostMapping("/post/{userDid}/{postRKey}/htmx/reply")
