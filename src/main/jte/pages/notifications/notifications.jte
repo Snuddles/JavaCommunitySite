@@ -4,7 +4,7 @@
 @import java.util.Map
 
 @param UserInfo user
-@param List<Map<String, String>> notifications = new ArrayList()
+@param List<Map<String, Object>> notifications = new ArrayList()
 
 @template.layout.main(
     title = "Notifications",
@@ -16,13 +16,16 @@
             user = user
         )
 
-<%--        @template.pages.notifications.components.notification(--%>
-<%--            id = "a",--%>
-<%--            title = "You have a new reply",--%>
-<%--            body = "Gregor replied to your post",--%>
-<%--            actionText = "Go to post",--%>
-<%--            actionHref = "post/somedid/somerkey",--%>
-<%--        )--%>
+        @for(Map<String, Object> notification : notifications)
+            @template.pages.notifications.components.notification(
+                id = notification.get("id").toString(),
+                title = "New Reply",
+                body = notification.get("text").toString(),
+                actionText = "Go to post",
+                actionHref = notification.get("postLink") != null ? notification.get("postLink").toString() : "#",
+                isRead = (Boolean) notification.get("isRead")
+            )
+        @endfor
 
         @if(notifications.isEmpty())
             <p style="align-self: center; color: var(--subtext-color); padding: 40px;">

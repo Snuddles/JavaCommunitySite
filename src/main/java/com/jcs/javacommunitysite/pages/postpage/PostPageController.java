@@ -32,6 +32,8 @@
  import static com.jcs.javacommunitysite.jooq.tables.Reply.REPLY;
  import static com.jcs.javacommunitysite.jooq.tables.HiddenReply.HIDDEN_REPLY;
  import static com.jcs.javacommunitysite.jooq.tables.Tags.TAGS;
+ import static com.jcs.javacommunitysite.jooq.tables.Notification.NOTIFICATION;
+ import com.jcs.javacommunitysite.jooq.enums.NotificationType;
 
  @Controller
  public class PostPageController {
@@ -158,11 +160,24 @@
          try {
              reply = new ReplyRecord(newReplyForm.getContent(), rootAturi);
              client.createRecord(reply);
+             
+             String postOwnerDid = userDid;
+             String replyingUserDid = client.getSession().getDid();
+             
+             if (!postOwnerDid.equals(replyingUserDid)) {
+                 dsl.insertInto(NOTIFICATION)
+                     .set(NOTIFICATION.RECIPIENT_USER_DID, postOwnerDid)
+                     .set(NOTIFICATION.TRIGGERING_USER_DID, replyingUserDid)
+                     .set(NOTIFICATION.POST_ATURI, rootAturi.toString())
+                     .set(NOTIFICATION.REPLY_ATURI, reply.getAtUri().toString())
+                     .set(NOTIFICATION.TYPE, NotificationType.NEW_COMMENT)
+                     .execute();
+             }
          } catch (Exception e) {
              return ErrorUtil.createErrorToast(response, model, "An error occurred while trying to reply to the question. Please try again later.");
          }
 
-         // Create a fake reply record to insert into the browser
+         
          var fakeReply = new com.jcs.javacommunitysite.jooq.tables.records.ReplyRecord();
          fakeReply.setRootPostAturi(rootAturi.toString());
          fakeReply.setContent(reply.getContent());

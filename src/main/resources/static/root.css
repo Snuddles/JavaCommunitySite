@@ -1381,6 +1381,7 @@ pre {
     align-items: center;
     gap: 10px;
     padding: 5px 0;
+    position: relative;
 
     & .notif-content {
         display: flex;
@@ -1397,6 +1398,23 @@ pre {
         display: flex;
         gap: 10px;
         align-items: center;
+    }
+
+    & .unread-indicator {
+        position: absolute;
+        left: -8px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 8px;
+        height: 8px;
+        background-color: #3b82f6;
+        border-radius: 50%;
+    }
+
+    &.unread {
+        background-color: rgba(59, 130, 246, 0.1);
+        border-left: 3px solid #3b82f6;
+        padding-left: 10px;
     }
 
     & + .notification {
