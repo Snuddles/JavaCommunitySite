@@ -1,4 +1,6 @@
 @import com.jcs.javacommunitysite.atproto.AtUri
+@import com.jcs.javacommunitysite.util.TimeUtil
+@import java.time.OffsetDateTime
 @import java.util.List
 @import java.util.Map
 
@@ -15,7 +17,9 @@
         aturi = new AtUri((String)post.get("aturi")),
         title = (String)post.get("title"),
         content = (String)post.get("content"),
-        amtReplies = (post.get("countReplies") instanceof Number n ? n.intValue() : 0)
+        amtReplies = (post.get("countReplies") instanceof Number n ? n.intValue() : 0),
+        timeText = TimeUtil.calculateTimeText(OffsetDateTime.parse(post.get("createdAt").toString())),
+        closed = !((Boolean) post.get("isOpen")),
     )
     !{i++;}
 @endfor

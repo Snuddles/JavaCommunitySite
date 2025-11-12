@@ -17,6 +17,7 @@
         selfHighlight = true,
         paginationTrigger = hasMoreReplies && (i == amtReplies),
         nextPage = nextPage,
+        loggedInUser = users.get("self")
     )
     !{i++;}
 @endfor

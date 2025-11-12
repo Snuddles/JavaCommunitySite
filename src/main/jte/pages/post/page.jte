@@ -27,6 +27,7 @@ content = @`
         @template.pages.post.components.opPost(
             post = post,
             user = users.get(post.getOwnerDid()),
+            loggedInUser = users.get("self"),
             isHidden = isPostHidden
         )
 
@@ -37,6 +38,7 @@ content = @`
                 user=users.get(reply.getOwnerDid()),
                 paginationTrigger = (i == postReplies.length),
                 nextPage = 2,
+                loggedInUser = users.get("self")
             )
             !{i++;}
         @endfor

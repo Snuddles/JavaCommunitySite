@@ -21,7 +21,8 @@
                 content = result.getContent(),
                 amtReplies = result.getReplyCount(),
                 timeText = result.getTimeText(),
-                tags = result.getTags()
+                tags = result.getTags(),
+                closed = !result.isOpen(),
             )
         @endfor
     </ul>

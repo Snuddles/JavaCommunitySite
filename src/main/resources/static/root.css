@@ -994,12 +994,7 @@ pre {
     font-size: var(--xsmall-text);
     background-color: var(--accent);
     color: var(--accent-text-color);
-    cursor: pointer;
     transition: filter 80ms, background-color 80ms;
-
-    &:hover {
-        filter: brightness(1.15);
-    }
 
     &.selected {
         background-color: #2d7a2d;

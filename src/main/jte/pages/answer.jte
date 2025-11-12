@@ -1,5 +1,7 @@
 @import com.jcs.javacommunitysite.atproto.AtUri
+@import com.jcs.javacommunitysite.util.TimeUtil
 @import com.jcs.javacommunitysite.util.UserInfo
+@import java.time.OffsetDateTime
 @import java.util.List
 @import java.util.Map
 
@@ -21,23 +23,25 @@
         )
 
         <!-- Filter Checkbox -->
-        <form method="get" action="/answer">
-            <label>
-                @if(filterMyPosts)
-                    <input type="checkbox" 
-                           name="filterMyPosts" 
-                           value="true"
-                           checked
-                           onchange="this.form.submit()">
-                @else
-                    <input type="checkbox" 
-                           name="filterMyPosts" 
-                           value="true"
-                           onchange="this.form.submit()">
-                @endif
-                Show only posts I've participated in
-            </label>
-        </form>
+        @if(user != null)
+            <form method="get" action="/answer">
+                <label>
+                    @if(filterMyPosts)
+                        <input type="checkbox"
+                               name="filterMyPosts"
+                               value="true"
+                               checked
+                               onchange="this.form.submit()">
+                    @else
+                        <input type="checkbox"
+                               name="filterMyPosts"
+                               value="true"
+                               onchange="this.form.submit()">
+                    @endif
+                    Show only posts I've participated in
+                </label>
+            </form>
+        @endif
 
         <!-- Display Posts -->
         @if(posts != null && !posts.isEmpty())
@@ -46,7 +50,9 @@
                     aturi = new AtUri((String)post.get("aturi")),
                     title = (String)post.get("title"),
                     content = (String)post.get("content"),
-                    amtReplies = (post.get("countReplies") instanceof Number n ? n.intValue() : 0)
+                    amtReplies = (post.get("countReplies") instanceof Number n ? n.intValue() : 0),
+                    timeText = TimeUtil.calculateTimeText(OffsetDateTime.parse(post.get("createdAt").toString())),
+                    closed = !((Boolean) post.get("isOpen"))
                 )
             @endfor
             @if(hasMoreAnswerPosts)

@@ -11,6 +11,7 @@
 @param UserInfo user
 @param boolean isHidden
 @param boolean selfHighlight = false
+@param UserInfo loggedInUser
 
 !{AtUri aturi = new AtUri(post.getAturi());}
 !{
@@ -54,7 +55,7 @@
                     id = "post-popup",
                     aturi = aturi,
                     ownsThisPost = user.isSelf,
-                    isCurUserAdmin = user.isSelf && user.isAdmin,
+                    isCurUserAdmin = loggedInUser != null ? loggedInUser.isAdmin : false,
                     isHidden = isHidden
                 )
             </div>

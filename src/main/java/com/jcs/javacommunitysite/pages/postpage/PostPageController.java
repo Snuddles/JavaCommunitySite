@@ -338,6 +338,7 @@
 
          model.addAttribute("reply", newReply);
          model.addAttribute("user", UserInfo.getFromDb(dsl, sessionService, updatedReply.getAtUri().getDid()));
+         model.addAttribute("loggedInUser", UserInfo.getSelfFromDb(dsl, sessionService));
          model.addAttribute("isHidden", ModUtil.isReplyHidden(dsl, currentReply.getAtUri())); // TODO
 
          return "pages/post/components/reply";
@@ -358,6 +359,7 @@
              model.addAttribute("reply", replyRecord);
              model.addAttribute("user", UserInfo.getFromDb(dsl, sessionService, new AtUri(reply).getDid()));
              model.addAttribute("isHidden", ModUtil.isReplyHidden(dsl, new AtUri(reply))); // TODO
+             model.addAttribute("loggedInUser", UserInfo.getSelfFromDb(dsl, sessionService));
              return "pages/post/components/reply";
          } catch (Exception e) {
              return ErrorUtil.createErrorToast(response, model, "Failed to retrieve reply. Please try again later.");
@@ -437,6 +439,7 @@
          model.addAttribute("user", UserInfo.getFromDb(dsl, sessionService, post.getAtUri().getDid()));
          model.addAttribute("isHidden", ModUtil.isPostHidden(dsl, new AtUri(userDid, QuestionRecord.recordCollection, postRKey))); // TODO
          model.addAttribute("selfHighlight", true);
+         model.addAttribute("loggedInUser", UserInfo.getSelfFromDb(dsl, sessionService));
 
          return "pages/post/components/opPost";
      }
@@ -456,6 +459,7 @@
              model.addAttribute("user", UserInfo.getFromDb(dsl, sessionService, userDid));
              model.addAttribute("isHidden", ModUtil.isPostHidden(dsl, new AtUri(userDid, QuestionRecord.recordCollection, postRKey))); // TODO
              model.addAttribute("selfHighlight", true);
+             model.addAttribute("loggedInUser", UserInfo.getSelfFromDb(dsl, sessionService));
              return "pages/post/components/opPost";
          } catch (Exception e) {
              return ErrorUtil.createErrorToast(response, model, "Failed to retrieve post. Please try again later.");

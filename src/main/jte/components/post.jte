@@ -6,11 +6,15 @@
 @param int amtReplies
 @param String timeText = null
 @param List<String> tags = null
+@param boolean closed = false
 
 <li class="post-item">
     <a href="/post/${aturi.getDid()}/${aturi.getRecordKey()}">
         <div class="post-name-container">
             <h4 class="post-name">${title}</h4>
+            @if(closed)
+                <div class="tag">Closed</div>
+            @endif
         </div>
         <p class="post-preview">${content}</p>
         @if(tags != null && !tags.isEmpty())

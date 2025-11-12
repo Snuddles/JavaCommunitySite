@@ -1,4 +1,5 @@
 @import com.jcs.javacommunitysite.atproto.AtUri
+@import com.jcs.javacommunitysite.util.TimeUtil
 @import java.util.List
 @import java.util.Map
 
@@ -18,8 +19,9 @@
         title = post.getTitle(),
         content = post.getContent(),
         amtReplies = (replyCountsMap != null && replyCountsMap.containsKey(post.getAturi())) ? replyCountsMap.get(post.getAturi()) : 0,
-        timeText = null,
-        tags = null
+        timeText = TimeUtil.calculateTimeText(post.getCreatedAt()),
+        tags = null,
+        closed = !post.getIsOpen(),
     )
     !{i++;}
 @endfor

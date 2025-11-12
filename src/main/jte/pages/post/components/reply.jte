@@ -5,6 +5,7 @@
 @import com.jcs.javacommunitysite.util.UserInfo
 
 @param ReplyRecord reply
+@param UserInfo loggedInUser
 @param UserInfo user
 @param boolean isHidden = false
 @param boolean selfHighlight = false
@@ -57,7 +58,7 @@
                             post = root,
                             reply = self,
                             ownsThisReply = user.isSelf,
-                            isCurUserAdmin = user.isSelf && user.isAdmin,
+                            isCurUserAdmin = loggedInUser != null ? loggedInUser.isAdmin : false,
                             isHidden = isHidden
                         )
                     </div>

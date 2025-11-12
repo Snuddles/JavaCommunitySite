@@ -1,6 +1,7 @@
 package com.jcs.javacommunitysite.pages.answerpage;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +64,7 @@ public class AnswerPageController {
         // Add loggedIn status
         model.addAttribute("loggedIn", sessionService.isAuthenticated());
 
-        List<Map<String, Object>> posts;
+        List<Map<String, Object>> posts = new ArrayList<>();
         int totalCount;
 
         if (sessionService.isAuthenticated()) {
@@ -85,16 +86,13 @@ public class AnswerPageController {
                         posts = getAllPostsPaged(pageSize, (page - 1) * pageSize);
                     }
                     
-                    model.addAttribute("posts", posts);
                     model.addAttribute("userDid", userDid);
                     model.addAttribute("user", UserInfo.getSelfFromDb(dsl, sessionService));
                 } catch (Exception e) {
                     System.err.println("Error fetching posts: " + e.getMessage());
-                    posts = List.of();
                     totalCount = 0;
                 }
             } else {
-                posts = List.of();
                 totalCount = 0;
             }
         } else {
@@ -106,6 +104,7 @@ public class AnswerPageController {
         boolean hasMore = totalCount > pageSize;
         model.addAttribute("hasMoreAnswerPosts", hasMore);
         model.addAttribute("nextPageAnswerPosts", 2);
+        model.addAttribute("posts", posts);
         
         return "pages/answer";
     }
@@ -259,6 +258,7 @@ public class AnswerPageController {
                     .from(HIDDEN_POST)
                     .where(HIDDEN_POST.POST_ATURI.eq(POST.ATURI))
             )
+            .and(POST.IS_OPEN.isTrue())
             .fetchOne(0, int.class);
     }
 
@@ -269,6 +269,7 @@ public class AnswerPageController {
                     .from(HIDDEN_POST)
                     .where(HIDDEN_POST.POST_ATURI.eq(POST.ATURI))
             )
+            .and(POST.IS_OPEN.isTrue())
             .orderBy(POST.CREATED_AT.desc())
             .limit(limit)
             .offset(offset)
@@ -304,6 +305,7 @@ public class AnswerPageController {
                     .from(HIDDEN_POST)
                     .where(HIDDEN_POST.POST_ATURI.eq(POST.ATURI))
             )
+            .and(POST.IS_OPEN.isTrue())
             .orderBy(POST.CREATED_AT.desc())
             .fetch();
 
@@ -363,6 +365,7 @@ public class AnswerPageController {
                 dsl.select(HIDDEN_POST.POST_ATURI)
                     .from(HIDDEN_POST)
             ))
+            .and(POST.IS_OPEN.isTrue())
             .fetchOne(0, int.class);
     }
 
@@ -380,6 +383,7 @@ public class AnswerPageController {
                 dsl.select(HIDDEN_POST.POST_ATURI)
                     .from(HIDDEN_POST)
             ))
+            .and(POST.IS_OPEN.isTrue())
             .orderBy(POST.CREATED_AT.desc())
             .limit(limit)
             .offset(offset)
@@ -421,6 +425,7 @@ public class AnswerPageController {
                 dsl.select(HIDDEN_POST.POST_ATURI)
                     .from(HIDDEN_POST)
             ))
+            .and(POST.IS_OPEN.isTrue())
             .orderBy(POST.CREATED_AT.desc())
             .fetch();
         

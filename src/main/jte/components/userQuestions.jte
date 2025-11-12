@@ -11,12 +11,13 @@
     @if(userPosts != null && !userPosts.isEmpty())
         @for(var post : userPosts)
             @template.components.post(
-            aturi = new AtUri(post.getAturi()),
-            title = post.getTitle(),
-            content = post.getContent(),
-            amtReplies = (replyCountsMap != null && replyCountsMap.containsKey(post.getAturi())) ? replyCountsMap.get(post.getAturi()) : 0,
-            timeText = (timeTextsMap != null && timeTextsMap.containsKey(post.getAturi())) ? timeTextsMap.get(post.getAturi()) : null,
-            tags = (tagsMap != null && tagsMap.containsKey(post.getAturi())) ? tagsMap.get(post.getAturi()) : null
+                aturi = new AtUri(post.getAturi()),
+                title = post.getTitle(),
+                content = post.getContent(),
+                amtReplies = (replyCountsMap != null && replyCountsMap.containsKey(post.getAturi())) ? replyCountsMap.get(post.getAturi()) : 0,
+                timeText = (timeTextsMap != null && timeTextsMap.containsKey(post.getAturi())) ? timeTextsMap.get(post.getAturi()) : null,
+                tags = (tagsMap != null && tagsMap.containsKey(post.getAturi())) ? tagsMap.get(post.getAturi()) : null
+                closed = !post.getIsOpen()
             )
         @endfor
     @else
