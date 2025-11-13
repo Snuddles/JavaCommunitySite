@@ -5,8 +5,8 @@ COPY pom.xml .
 COPY src ./src
 COPY target/generated-sources ./target/generated-sources
 
-# Package application (skip jOOQ generation in Docker)
-RUN mvn clean package -DskipTests -Djooq.codegen.skip=true
+# Package application (skip jOOQ generation - using pre-generated sources)
+RUN mvn package -DskipTests -Djooq.codegen.skip=true
 
 # ---- Runtime Stage ----
 FROM eclipse-temurin:21-jre-alpine
