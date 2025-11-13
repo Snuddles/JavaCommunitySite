@@ -3,12 +3,10 @@ FROM maven:3.9.9 AS build
 WORKDIR /app
 COPY pom.xml .
 COPY src ./src
+COPY target/generated-sources ./target/generated-sources
 
-# Generate jOOQ classes
-RUN mvn generate-sources
-
-# Package application
-RUN mvn clean package -DskipTests
+# Package application (skip jOOQ generation in Docker)
+RUN mvn clean package -DskipTests -Djooq.codegen.skip=true
 
 # ---- Runtime Stage ----
 FROM eclipse-temurin:21-jre-alpine
