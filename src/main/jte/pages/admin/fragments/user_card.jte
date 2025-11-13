@@ -7,7 +7,11 @@
 @if (searchedUser != null)
 <div class="card">
     <div class="left-card">
-        <h6>${searchedUser.getDisplayName()}</h6>
+        @if(searchedUser.getDisplayName().isEmpty())
+            <h6>${searchedUser.getHandle()}</h6>
+        @else
+            <h6>${searchedUser.getDisplayName()}</h6>
+        @endif
         <p class="handle">@${searchedUser.getHandle()}</p>
     </div>
 

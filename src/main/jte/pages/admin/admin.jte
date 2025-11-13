@@ -1,10 +1,14 @@
 @import com.jcs.javacommunitysite.atproto.AtUri
+@import com.jcs.javacommunitysite.pages.admin.AdminPageController
 @import com.jcs.javacommunitysite.util.UserInfo
+@import java.util.List
 @import java.util.Map
+@import com.jcs.javacommunitysite.pages.admin.AdminPageController.AdminUser
 
 @param Map<String, String> myTags
 @param Map<String, String> othersTags
 @param UserInfo user = null
+@param List<AdminUser> admins
 
 @template.layout.main(
     title = "Admin",
@@ -75,7 +79,7 @@
         </div>
 
         <div>
-            <h3>Admin Users</h3>
+            <h3>Manage Admins</h3>
             <br/>
             <div class="contained-section">
                 <form
@@ -84,7 +88,7 @@
                     hx-target="#user-search-result"
                     hx-swap="innerHTML"
                 >
-                    <h4>Manage Admins</h4>
+                    <h4>Search Users</h4>
                     <div class="admin-search">
                         <input
                             class="textbox"
@@ -102,6 +106,40 @@
 
                 <div id="user-search-result" class="mt"></div>
             </div>
+        </div>
+            <h3>Admin List</h3>
+            <div class="contained-section">
+                @for(AdminUser admin : admins)
+                    <div class="card">
+                        <div class="card-left">
+                            @if(admin.displayName().isEmpty())
+                                <h6>${admin.handle()}</h6>
+                            @else
+                                <h6>${admin.displayName()}</h6>
+                            @endif
+                            <p>${admin.handle()}</p>
+                        </div>
+                        <div class="card-right">
+                            @if(admin.roleName().equals("admin"))
+                                <div class="admin-role">
+                                    <form
+                                        hx-post="/admin/revoke"
+                                        hx-vals='{"targetDid":"${admin.did()}"}'
+                                        hx-target=".admin-role"
+                                        hx-swap="innerHTML"
+                                    >
+                                        <button class="button btn-danger" type="submit">Remove Admin</button>
+                                    </form>
+                                </div>
+                            @else
+                               <p>Superadmin — Cannot modify</p>
+                            @endif
+                        </div>
+                    </div>
+                @endfor
+            </div>
+        <div>
+
         </div>
 
 <%--        <div>--%>

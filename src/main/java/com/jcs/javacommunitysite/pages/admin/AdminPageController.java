@@ -60,6 +60,21 @@ public class AdminPageController {
                 .where(TAGS.CREATED_BY.ne(client.getSession().getDid()))
                 .fetchMap(TAGS.ATURI, TAGS.TAG_NAME);
 
+        List<AdminUser> admins = dsl
+                .select(USER.DID, USER.HANDLE, USER.DISPLAY_NAME, ROLE.NAME)
+                .from(USER)
+                .join(USER_ROLE).on(USER_ROLE.USER_DID.eq(USER.DID))
+                .join(ROLE).on(USER_ROLE.ROLE_ID.eq(ROLE.ID))
+                .where(ROLE.NAME.in("admin", "superadmin"))
+                .orderBy(ROLE.NAME.desc(), USER.HANDLE.asc())   // superadmin first, then admin
+                .fetch(record -> new AdminUser(
+                        record.get(USER.DID),
+                        record.get(USER.HANDLE),
+                        record.get(USER.DISPLAY_NAME),
+                        record.get(ROLE.NAME)
+                ));
+
+        model.addAttribute("admins", admins);
         model.addAttribute("myTags", myTags);
         model.addAttribute("othersTags", othersTags);
         model.addAttribute("user", UserInfo.getSelfFromDb(dsl, sessionService));
@@ -239,4 +254,11 @@ public class AdminPageController {
                 rows > 0 ? "Admin role removed successfully!" : "Nothing changed.");
         return "pages/admin/fragments/message";
     }
+
+    public record AdminUser(
+            String did,
+            String handle,
+            String displayName,
+            String roleName
+    ){}
 }
