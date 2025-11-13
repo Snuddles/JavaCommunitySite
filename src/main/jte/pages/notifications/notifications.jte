@@ -1,10 +1,10 @@
 @import com.jcs.javacommunitysite.util.UserInfo
 @import java.util.List
-@import java.util.ArrayList
 @import java.util.Map
+@import java.util.ArrayList
 
 @param UserInfo user
-@param List<Map<String, Object>> notifications = new ArrayList()
+@param List<Map<String, Object>> notifications = new ArrayList<>()
 
 @template.layout.main(
     title = "Notifications",
@@ -12,7 +12,7 @@
     <div class="page-content notifications">
 
         @template.components.pageHeader(
-            content = @`<h2>Notifications</h2>`,
+            content = @`<h2 style="margin-bottom: 25px;">Notifications</h2>`,
             user = user
         )
 
@@ -23,7 +23,8 @@
                 body = notification.get("text").toString(),
                 actionText = "Go to post",
                 actionHref = notification.get("postLink") != null ? notification.get("postLink").toString() : "#",
-                isRead = (Boolean) notification.get("isRead")
+                isRead = (Boolean) notification.get("isRead"),
+                createdAt = notification.get("createdAt").toString(),
             )
         @endfor
 

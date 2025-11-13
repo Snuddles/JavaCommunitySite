@@ -39,6 +39,7 @@ public class NotificationPageController {
         }
 
         var user = UserInfo.getSelfFromDb(dsl, sessionService);
+        user.numUnreadNotifs = 0;
         model.addAttribute("user", user);
 
         var clientOpt = sessionService.getCurrentClient();
@@ -46,7 +47,8 @@ public class NotificationPageController {
             String userDid = clientOpt.get().getSession().getDid();
             
             List<Map<String, Object>> notifications = new ArrayList<>();
-            
+
+            // Grab notifications from DB
             var records = dsl.select()
                 .from(NOTIFICATION)
                 .leftJoin(USER).on(USER.DID.eq(NOTIFICATION.TRIGGERING_USER_DID))
@@ -54,7 +56,8 @@ public class NotificationPageController {
                 .where(NOTIFICATION.RECIPIENT_USER_DID.eq(userDid))
                 .orderBy(NOTIFICATION.CREATED_AT.desc())
                 .fetch();
-            
+
+            // Process notifications for view
             for (var record : records) {
                 Map<String, Object> notification = new HashMap<>();
                 
@@ -91,6 +94,17 @@ public class NotificationPageController {
                 }
                 
                 notifications.add(notification);
+            }
+
+            // Mark all notifications as read
+            try {
+                dsl.update(NOTIFICATION)
+                        .set(NOTIFICATION.READ_AT, java.time.OffsetDateTime.now())
+                        .where(NOTIFICATION.RECIPIENT_USER_DID.eq(userDid))
+                        .and(NOTIFICATION.READ_AT.isNull())
+                        .execute();
+            } catch (Exception e) {
+                System.err.println("Failed to mark all notifications as read: " + e.getMessage());
             }
             
             model.addAttribute("notifications", notifications);
@@ -141,40 +155,6 @@ public class NotificationPageController {
             return ErrorUtil.createErrorToast(resp, model, "Invalid notification ID");
         } catch (Exception e) {
             return ErrorUtil.createErrorToast(resp, model, "Failed to delete notification, please try again later");
-        }
-
-        return "empty";
-    }
-    
-    @PostMapping("/notifications/markread")
-    public String markNotificationAsRead(Model model, HttpServletResponse resp, @RequestParam String id) {
-        if (!sessionService.isAuthenticated()) {
-            return "redirect:/login?next=/notifications&msg=To mark notifications as read, please log in.";
-        }
-
-        try {
-            var clientOpt = sessionService.getCurrentClient();
-            if (clientOpt.isPresent()) {
-                String userDid = clientOpt.get().getSession().getDid();
-                UUID notificationUuid = UUID.fromString(id);
-                
-                int updatedRows = dsl.update(NOTIFICATION)
-                    .set(NOTIFICATION.READ_AT, java.time.OffsetDateTime.now())
-                    .where(NOTIFICATION.ID.eq(notificationUuid))
-                    .and(NOTIFICATION.RECIPIENT_USER_DID.eq(userDid))
-                    .and(NOTIFICATION.READ_AT.isNull())
-                    .execute();
-                
-                if (updatedRows == 0) {
-                    return ErrorUtil.createErrorToast(resp, model, "Notification not found or already marked as read");
-                }
-            } else {
-                return ErrorUtil.createErrorToast(resp, model, "Authentication required");
-            }
-        } catch (IllegalArgumentException e) {
-            return ErrorUtil.createErrorToast(resp, model, "Invalid notification ID");
-        } catch (Exception e) {
-            return ErrorUtil.createErrorToast(resp, model, "Failed to mark notification as read, please try again later");
         }
 
         return "empty";

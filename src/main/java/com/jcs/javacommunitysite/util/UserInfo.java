@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import static com.jcs.javacommunitysite.jooq.tables.Notification.NOTIFICATION;
 import static com.jcs.javacommunitysite.jooq.tables.User.USER;
 import static com.jcs.javacommunitysite.jooq.tables.UserRole.USER_ROLE;
 
@@ -18,8 +19,9 @@ public class UserInfo {
     public String bio;
     public boolean isSelf;
     public boolean isAdmin;
+    public int numUnreadNotifs;
 
-    public UserInfo(String handle, String avatarUri, String displayName, String did, String bio, boolean isSelf, boolean isAdmin) {
+    public UserInfo(String handle, String avatarUri, String displayName, String did, String bio, boolean isSelf, boolean isAdmin, int numUnreadNotifs) {
         this.handle = handle;
         this.avatarUri = avatarUri;
         this.displayName = displayName;
@@ -27,6 +29,7 @@ public class UserInfo {
         this.bio = bio;
         this.isSelf = isSelf;
         this.isAdmin = isAdmin;
+        this.numUnreadNotifs = numUnreadNotifs;
     }
 
     public static Map<String, UserInfo> getFromDb(DSLContext dsl, AtprotoSessionService session, Set<String> userDids) {
@@ -48,6 +51,14 @@ public class UserInfo {
                 .and(USER_ROLE.ROLE_ID.in(1, 2))
                 .fetchSet(USER_ROLE.USER_DID);
 
+        // Get unread notifications count for self user
+        var unreadNotifsCount = selfDid != null ?
+                dsl.selectCount()
+                        .from(NOTIFICATION)
+                        .where(NOTIFICATION.RECIPIENT_USER_DID.eq(selfDid))
+                        .and(NOTIFICATION.READ_AT.isNull())
+                        .fetchOne(0, int.class) : 0;
+
         // Map users to map
         var usersMap = new HashMap<String, UserInfo>();
         for (var user : associatedUsers) {
@@ -58,7 +69,8 @@ public class UserInfo {
                     user.getDid(),
                     user.getDescription(),
                     selfDid != null && user.getDid().equals(selfDid),
-                    adminList.contains(user.getDid())
+                    adminList.contains(user.getDid()),
+                    selfDid != null && user.getDid().equals(selfDid) ? unreadNotifsCount : 0
             ));
         }
 
@@ -81,6 +93,13 @@ public class UserInfo {
                 .where(USER.DID.eq(did))
                 .fetchOne();
 
+        int numUnreadNotifs = did.equals(selfDid) ?
+                dsl.selectCount()
+                    .from(NOTIFICATION)
+                    .where(NOTIFICATION.RECIPIENT_USER_DID.eq(selfDid))
+                    .and(NOTIFICATION.READ_AT.isNull())
+                    .fetchOne(0, int.class) : 0;
+
         return new UserInfo(
                 user.getHandle(),
                 user.getAvatarBloburl(),
@@ -88,7 +107,8 @@ public class UserInfo {
                 user.getDid(),
                 user.getDescription(),
                 selfDid != null && selfDid.equals(did),
-                isAdmin(dsl, did)
+                isAdmin(dsl, did),
+                numUnreadNotifs
         );
     }
 

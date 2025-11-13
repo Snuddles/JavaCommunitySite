@@ -71,7 +71,7 @@ content = @`
                     <div id="reply-error-container"></div>
                     <div class="runner"></div>
 
-                    @if(postReplies.length >= 1)
+                    @if(postReplies.length >= 1 && post.getOwnerDid().equals(users.get("self").did))
                         <div class="info-container" style="margin-top: 20px;">
                             <p>Has your question been answered?</p>
                             <button

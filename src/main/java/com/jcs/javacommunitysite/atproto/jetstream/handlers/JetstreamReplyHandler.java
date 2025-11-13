@@ -1,12 +1,15 @@
 package com.jcs.javacommunitysite.atproto.jetstream.handlers;
 
 import java.time.ZoneOffset;
+
+import com.jcs.javacommunitysite.jooq.enums.NotificationType;
 import org.jooq.DSLContext;
 import com.jcs.javacommunitysite.atproto.AtUri;
 import com.jcs.javacommunitysite.atproto.jetstream.JetstreamHandler;
 import com.jcs.javacommunitysite.atproto.records.ReplyRecord;
 import dev.mccue.json.Json;
 
+import static com.jcs.javacommunitysite.jooq.tables.Notification.NOTIFICATION;
 import static com.jcs.javacommunitysite.jooq.tables.Reply.REPLY;
 import static dev.mccue.json.JsonDecoder.field;
 import static dev.mccue.json.JsonDecoder.string;
@@ -35,15 +38,30 @@ public class JetstreamReplyHandler implements JetstreamHandler {
 
          try{
              Json replyJson = record.toJson();
+             AtUri rootAtUri = field(replyJson, "root", AtUri::fromJson);
 
+             // Insert reply into DB
              dsl.insertInto(REPLY)
-             .set(REPLY.CONTENT, field(replyJson, "content", string()))
-             .set(REPLY.CREATED_AT, record.getCreatedAt().atOffset(ZoneOffset.UTC))
-             .set(REPLY.UPDATED_AT, record.getUpdatedAt().atOffset(ZoneOffset.UTC))
-             .set(REPLY.ROOT_POST_ATURI, field(replyJson, "root", AtUri::fromJson).toString())
-             .set(REPLY.ATURI, atUri.toString())
-             .set(REPLY.OWNER_DID, atUri.getDid())
-             .execute();
+                 .set(REPLY.CONTENT, field(replyJson, "content", string()))
+                 .set(REPLY.CREATED_AT, record.getCreatedAt().atOffset(ZoneOffset.UTC))
+                 .set(REPLY.UPDATED_AT, record.getUpdatedAt().atOffset(ZoneOffset.UTC))
+                 .set(REPLY.ROOT_POST_ATURI, rootAtUri.toString())
+                 .set(REPLY.ATURI, atUri.toString())
+                 .set(REPLY.OWNER_DID, atUri.getDid())
+                 .execute();
+
+             // Create notification if applicable
+             String postOwnerDid = rootAtUri.getDid();
+             String replyingUserDid = atUri.getDid();
+             if (!postOwnerDid.equals(replyingUserDid)) {
+                 dsl.insertInto(NOTIFICATION)
+                         .set(NOTIFICATION.RECIPIENT_USER_DID, postOwnerDid)
+                         .set(NOTIFICATION.TRIGGERING_USER_DID, replyingUserDid)
+                         .set(NOTIFICATION.POST_ATURI, rootAtUri.toString())
+                         .set(NOTIFICATION.REPLY_ATURI, atUri.toString())
+                         .set(NOTIFICATION.TYPE, NotificationType.NEW_COMMENT)
+                         .execute();
+             }
          } catch(Exception e){
              System.out.println("Error inserting post record: " + e.getMessage());
              e.printStackTrace();

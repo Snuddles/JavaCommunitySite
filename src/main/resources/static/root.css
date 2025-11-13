@@ -328,6 +328,7 @@ ul, ol {
 
 .button {
     all: unset;
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1380,14 +1381,26 @@ pre {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 5px 0;
     position: relative;
+    border-left: 3px solid transparent;
+    padding: 5px 0 5px 10px;
 
     & .notif-content {
         display: flex;
         flex-direction: column;
-        padding: 10px;
+        padding: 5px;
         flex-grow: 1;
+
+        & .title-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            & p {
+                font-style: italic;
+                font-size: var(--small-text);
+            }
+        }
 
         & p {
            color: var(--subtext-color);
@@ -1398,17 +1411,6 @@ pre {
         display: flex;
         gap: 10px;
         align-items: center;
-    }
-
-    & .unread-indicator {
-        position: absolute;
-        left: -8px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 8px;
-        height: 8px;
-        background-color: #3b82f6;
-        border-radius: 50%;
     }
 
     &.unread {
@@ -1457,4 +1459,21 @@ code[class*="language-"] {
     & .handle {
         color: var(--subtext-color);
     }
+}
+
+.notification-bubble {
+    position: absolute;
+    top: 100%;
+    left: 100%;
+    background-color: #ff0000;
+    border-radius: 1000px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 15px;
+    height: 15px;
+    padding: 0 3px;
+    color: white;
+    font-size: var(--xsmall-text);
+    transform: translate(-85%, -85%);
 }

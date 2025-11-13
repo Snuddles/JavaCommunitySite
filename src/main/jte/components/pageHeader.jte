@@ -17,6 +17,12 @@
         @if(user != null)
             <a class="button icon" href="/notifications">
                 <img src="/bell.svg" alt="Notifications" />
+
+                @if(user.numUnreadNotifs >= 1)
+                    <div class="notification-bubble">
+                        ${user.numUnreadNotifs}
+                    </div>
+                @endif
             </a>
             <div class="pfp-container">
                 <img

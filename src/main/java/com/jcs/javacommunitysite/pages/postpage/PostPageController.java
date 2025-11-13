@@ -160,20 +160,8 @@
          try {
              reply = new ReplyRecord(newReplyForm.getContent(), rootAturi);
              client.createRecord(reply);
-             
-             String postOwnerDid = userDid;
-             String replyingUserDid = client.getSession().getDid();
-             
-             if (!postOwnerDid.equals(replyingUserDid)) {
-                 dsl.insertInto(NOTIFICATION)
-                     .set(NOTIFICATION.RECIPIENT_USER_DID, postOwnerDid)
-                     .set(NOTIFICATION.TRIGGERING_USER_DID, replyingUserDid)
-                     .set(NOTIFICATION.POST_ATURI, rootAturi.toString())
-                     .set(NOTIFICATION.REPLY_ATURI, reply.getAtUri().toString())
-                     .set(NOTIFICATION.TYPE, NotificationType.NEW_COMMENT)
-                     .execute();
-             }
          } catch (Exception e) {
+             System.out.println(e);
              return ErrorUtil.createErrorToast(response, model, "An error occurred while trying to reply to the question. Please try again later.");
          }
 

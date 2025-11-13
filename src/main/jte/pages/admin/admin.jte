@@ -104,9 +104,9 @@
             </div>
         </div>
 
-        <div>
-            <h3>Audit Log</h3>
-        </div>
+<%--        <div>--%>
+<%--            <h3>Audit Log</h3>--%>
+<%--        </div>--%>
     </div>
 `
 )
