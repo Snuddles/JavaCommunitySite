@@ -1,6 +1,6 @@
 package com.jcs.javacommunitysite.pages.answerpage;
 
-import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,19 +13,23 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.jcs.javacommunitysite.atproto.AtprotoClient;
 import com.jcs.javacommunitysite.atproto.AtprotoUtil;
 import com.jcs.javacommunitysite.atproto.service.AtprotoSessionService;
+import com.jcs.javacommunitysite.atproto.records.HideReplyRecord;
+
+import java.time.Instant;
 import static com.jcs.javacommunitysite.jooq.tables.Post.POST;
 import static com.jcs.javacommunitysite.jooq.tables.Reply.REPLY;
-import static com.jcs.javacommunitysite.jooq.tables.User.USER;
-import static com.jcs.javacommunitysite.jooq.tables.HiddenPost.HIDDEN_POST;
 
-import static dev.mccue.json.JsonDecoder.field;
-import static dev.mccue.json.JsonDecoder.string;
+import static com.jcs.javacommunitysite.jooq.tables.HiddenPost.HIDDEN_POST;
+import static com.jcs.javacommunitysite.jooq.tables.HiddenReply.HIDDEN_REPLY;
+
+
 
 /**
  * Controller for the Answer page where users can view and reply to posts.
@@ -40,6 +44,14 @@ public class AnswerPageController {
     public AnswerPageController(AtprotoSessionService sessionService, DSLContext dsl) {
         this.sessionService = sessionService;
         this.dsl = dsl;
+    }
+
+    private boolean isCurrentUserAdmin() {
+        if (!sessionService.isAuthenticated()) return false;
+        var clientOpt = sessionService.getCurrentClient();
+        if (clientOpt.isEmpty()) return false;
+        String clientDid = clientOpt.get().getSession().getDid();
+        return UserInfo.isAdmin(dsl, clientDid);
     }
 
     /**
@@ -61,8 +73,8 @@ public class AnswerPageController {
         int pageSize = 20;
         int page = 1;
 
-        // Add loggedIn status
-        model.addAttribute("loggedIn", sessionService.isAuthenticated());
+    // Add loggedIn status
+    model.addAttribute("loggedIn", sessionService.isAuthenticated());
 
         List<Map<String, Object>> posts = new ArrayList<>();
         int totalCount;
@@ -77,17 +89,22 @@ public class AnswerPageController {
                     var profile = AtprotoUtil.getBskyProfile(handle);
                     String userDid = profile.get("did").toString().replace("\"", "");
 
+                    // Decide whether to include hidden posts/replies for this viewer
+                    boolean includeHidden = isCurrentUserAdmin();
+
                     // Fetch posts based on filter preference
                     if (filterMyPosts) {
-                        totalCount = getPostsUserParticipatedInCount(userDid);
-                        posts = getPostsUserParticipatedInPaged(userDid, pageSize, (page - 1) * pageSize);
+                        totalCount = getPostsUserParticipatedInCount(userDid, includeHidden);
+                        posts = getPostsUserParticipatedInPaged(userDid, pageSize, (page - 1) * pageSize, includeHidden);
                     } else {
-                        totalCount = getAllPostsCount();
-                        posts = getAllPostsPaged(pageSize, (page - 1) * pageSize);
+                        totalCount = getAllPostsCount(includeHidden);
+                        posts = getAllPostsPaged(pageSize, (page - 1) * pageSize, includeHidden);
                     }
-                    
+
                     model.addAttribute("userDid", userDid);
-                    model.addAttribute("user", UserInfo.getSelfFromDb(dsl, sessionService));
+                    var self = UserInfo.getSelfFromDb(dsl, sessionService);
+                    model.addAttribute("user", self);
+                    model.addAttribute("loggedInUser", self);
                 } catch (Exception e) {
                     System.err.println("Error fetching posts: " + e.getMessage());
                     totalCount = 0;
@@ -97,8 +114,8 @@ public class AnswerPageController {
             }
         } else {
             // Unauthenticated users see all posts
-            totalCount = getAllPostsCount();
-            posts = getAllPostsPaged(pageSize, (page - 1) * pageSize);
+            totalCount = getAllPostsCount(false);
+            posts = getAllPostsPaged(pageSize, (page - 1) * pageSize, false);
         }
 
         boolean hasMore = totalCount > pageSize;
@@ -117,6 +134,8 @@ public class AnswerPageController {
         try {
             List<Map<String, Object>> posts;
             int totalCount;
+            boolean includeHidden = isCurrentUserAdmin();
+
             if (filterMyPosts && sessionService.isAuthenticated()) {
                 var clientOpt = sessionService.getCurrentClient();
                 if (clientOpt.isPresent()) {
@@ -124,15 +143,15 @@ public class AnswerPageController {
                     String handle = client.getSession().getHandle();
                     var profile = AtprotoUtil.getBskyProfile(handle);
                     String userDid = profile.get("did").toString().replace("\"", "");
-                    totalCount = getPostsUserParticipatedInCount(userDid);
-                    posts = getPostsUserParticipatedInPaged(userDid, pageSize, (page - 1) * pageSize);
+                    totalCount = getPostsUserParticipatedInCount(userDid, includeHidden);
+                    posts = getPostsUserParticipatedInPaged(userDid, pageSize, (page - 1) * pageSize, includeHidden);
                 } else {
-                    totalCount = getAllPostsCount();
-                    posts = getAllPostsPaged(pageSize, (page - 1) * pageSize);
+                    totalCount = getAllPostsCount(includeHidden);
+                    posts = getAllPostsPaged(pageSize, (page - 1) * pageSize, includeHidden);
                 }
             } else {
-                totalCount = getAllPostsCount();
-                posts = getAllPostsPaged(pageSize, (page - 1) * pageSize);
+                totalCount = getAllPostsCount(includeHidden);
+                posts = getAllPostsPaged(pageSize, (page - 1) * pageSize, includeHidden);
             }
 
             boolean hasMore = totalCount > (page * pageSize);
@@ -141,6 +160,67 @@ public class AnswerPageController {
             model.addAttribute("nextPageAnswerPosts", page + 1);
             model.addAttribute("filterMyPosts", filterMyPosts);
             return "pages/answer/htmx/posts";
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    @PostMapping("/answer/htmx/hideReply")
+    public String hideReply(Model model,
+                           @RequestParam("reply") String reply) {
+        var clientOpt = sessionService.getCurrentClient();
+        if (clientOpt.isEmpty() || !sessionService.isAuthenticated()) {
+            return "empty";
+        }
+
+        AtprotoClient client = clientOpt.get();
+
+        // Check admin permission
+        String clientDid = client.getSession().getDid();
+        if (!UserInfo.isAdmin(dsl, clientDid)) {
+            return "empty"; // silently ignore or could return 403
+        }
+
+        try {
+            var hideReplyRecord = new HideReplyRecord(new com.jcs.javacommunitysite.atproto.AtUri(reply), (Instant) null);
+            client.createRecord(hideReplyRecord);
+
+            model.addAttribute("reply", new com.jcs.javacommunitysite.atproto.AtUri(reply));
+            model.addAttribute("isHidden", true);
+            return "pages/post/htmx/hideButton";
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    @PostMapping("/answer/htmx/unhideReply")
+    public String unhideReply(Model model,
+                             @RequestParam("reply") String reply) {
+        var clientOpt = sessionService.getCurrentClient();
+        if (clientOpt.isEmpty() || !sessionService.isAuthenticated()) {
+            return "empty";
+        }
+
+        AtprotoClient client = clientOpt.get();
+
+        // Check admin permission
+        String clientDid = client.getSession().getDid();
+        if (!UserInfo.isAdmin(dsl, clientDid)) {
+            return "empty";
+        }
+
+        try {
+            var hiddenReplyAturi = dsl.select(HIDDEN_REPLY.ATURI)
+                    .from(HIDDEN_REPLY)
+                    .where(HIDDEN_REPLY.REPLY_ATURI.eq(reply))
+                    .fetchOneInto(String.class);
+            if (hiddenReplyAturi != null) {
+                client.deleteRecord(new com.jcs.javacommunitysite.atproto.AtUri(hiddenReplyAturi));
+            }
+
+            model.addAttribute("reply", new com.jcs.javacommunitysite.atproto.AtUri(reply));
+            model.addAttribute("isHidden", false);
+            return "pages/post/htmx/hideButton";
         } catch (Exception e) {
             return "";
         }
@@ -170,10 +250,13 @@ public class AnswerPageController {
                     var profile = AtprotoUtil.getBskyProfile(handle);
                     String userDid = profile.get("did").toString().replace("\"", "");
 
+                    // Decide whether to include hidden posts/replies for this viewer
+                    boolean includeHidden = isCurrentUserAdmin();
+
                     // Apply filter based on request parameter
                     List<Map<String, Object>> posts = filterMyPosts 
-                        ? getPostsUserParticipatedIn(userDid)
-                        : getAllPosts();
+                        ? getPostsUserParticipatedIn(userDid, includeHidden)
+                        : getAllPosts(includeHidden);
                     
                     // Build response with posts and metadata
                     response.put("posts", posts);
@@ -227,7 +310,7 @@ public class AnswerPageController {
             });
             
             // Get posts this user has participated in
-            var posts = getPostsUserParticipatedIn(ownerDid);
+            var posts = getPostsUserParticipatedIn(ownerDid, false);
             
             // Build debug response
             Map<String, Object> response = new HashMap<>();
@@ -251,25 +334,34 @@ public class AnswerPageController {
      * @return List of all posts as Maps
      */
     private int getAllPostsCount() {
-        return dsl.selectCount()
-            .from(POST)
-            .whereNotExists(
-                dsl.selectOne()
-                    .from(HIDDEN_POST)
-                    .where(HIDDEN_POST.POST_ATURI.eq(POST.ATURI))
-            )
-            .and(POST.IS_OPEN.isTrue())
-            .fetchOne(0, int.class);
+        return getAllPostsCount(false);
     }
 
-    private List<Map<String, Object>> getAllPostsPaged(int limit, int offset) {
-        var records = dsl.selectFrom(POST)
-            .whereNotExists(
+    private int getAllPostsCount(boolean includeHidden) {
+        var q = dsl.selectCount()
+            .from(POST)
+            .where(POST.IS_OPEN.isTrue());
+        if (!includeHidden) {
+            q = q.andNotExists(
+                dsl.selectOne()
+                   .from(HIDDEN_POST)
+                   .where(HIDDEN_POST.POST_ATURI.eq(POST.ATURI))
+            );
+        }
+        return q.fetchOne(0, int.class);
+    }
+
+    private List<Map<String, Object>> getAllPostsPaged(int limit, int offset, boolean includeHidden) {
+        var recordsSelect = dsl.selectFrom(POST)
+            .where(POST.IS_OPEN.isTrue());
+        if (!includeHidden) {
+            recordsSelect = recordsSelect.andNotExists(
                 dsl.selectOne()
                     .from(HIDDEN_POST)
                     .where(HIDDEN_POST.POST_ATURI.eq(POST.ATURI))
-            )
-            .and(POST.IS_OPEN.isTrue())
+            );
+        }
+        var records = recordsSelect
             .orderBy(POST.CREATED_AT.desc())
             .limit(limit)
             .offset(offset)
@@ -287,10 +379,18 @@ public class AnswerPageController {
                 map.put("createdAt", record.getCreatedAt() != null ? record.getCreatedAt().toString() : null);
                 map.put("updatedAt", record.getUpdatedAt() != null ? record.getUpdatedAt().toString() : null);
                 map.put("ownerDid", record.getOwnerDid());
-                Integer replyCount = dsl.selectCount()
+                // Count replies, excluding hidden replies for non-admins
+                var replyCountQ = dsl.selectCount()
                     .from(REPLY)
-                    .where(REPLY.ROOT_POST_ATURI.eq(record.getAturi()))
-                    .fetchOne(0, Integer.class);
+                    .where(REPLY.ROOT_POST_ATURI.eq(record.getAturi()));
+                if (!includeHidden) {
+                    replyCountQ = replyCountQ.andNotExists(
+                        dsl.selectOne()
+                           .from(HIDDEN_REPLY)
+                           .where(HIDDEN_REPLY.REPLY_ATURI.eq(REPLY.ATURI))
+                    );
+                }
+                Integer replyCount = replyCountQ.fetchOne(0, Integer.class);
                 map.put("countReplies", replyCount != null ? replyCount : 0);
                 return map;
             })
@@ -298,26 +398,24 @@ public class AnswerPageController {
     }
 
     private List<Map<String, Object>> getAllPosts() {
-        var records = dsl.selectFrom(POST)
-            .whereNotExists(
+        return getAllPosts(false);
+    }
+
+    private List<Map<String, Object>> getAllPosts(boolean includeHidden) {
+        var recordsSelect = dsl.selectFrom(POST)
+            .where(POST.IS_OPEN.isTrue());
+        if (!includeHidden) {
+            recordsSelect = recordsSelect.andNotExists(
                 //Exclude posts that are in the hidden table
                 dsl.selectOne()
                     .from(HIDDEN_POST)
                     .where(HIDDEN_POST.POST_ATURI.eq(POST.ATURI))
-            )
-            .and(POST.IS_OPEN.isTrue())
+            );
+        }
+        var records = recordsSelect
             .orderBy(POST.CREATED_AT.desc())
             .fetch();
 
-        System.out.println(dsl.selectFrom(POST)
-                .whereNotExists(
-                        //Exclude posts that are in the hidden table
-                        dsl.selectOne()
-                                .from(HIDDEN_POST)
-                                .where(HIDDEN_POST.POST_ATURI.eq(POST.ATURI))
-                )
-                .orderBy(POST.CREATED_AT.desc()).getSQL());
-        
         return records.stream()
             .map(record -> {
                 Map<String, Object> map = new HashMap<>();
@@ -333,10 +431,17 @@ public class AnswerPageController {
                 map.put("ownerDid", record.getOwnerDid());
                 
                 // Add reply count
-                Integer replyCount = dsl.selectCount()
+                var replyCountQ = dsl.selectCount()
                     .from(REPLY)
-                    .where(REPLY.ROOT_POST_ATURI.eq(record.getAturi()))
-                    .fetchOne(0, Integer.class);
+                    .where(REPLY.ROOT_POST_ATURI.eq(record.getAturi()));
+                if (!includeHidden) {
+                    replyCountQ = replyCountQ.andNotExists(
+                        dsl.selectOne()
+                           .from(HIDDEN_REPLY)
+                           .where(HIDDEN_REPLY.REPLY_ATURI.eq(REPLY.ATURI))
+                    );
+                }
+                Integer replyCount = replyCountQ.fetchOne(0, Integer.class);
                 map.put("countReplies", replyCount != null ? replyCount : 0);
                 
                 return map;
@@ -352,8 +457,8 @@ public class AnswerPageController {
      * @param userDid The DID of the user to filter posts for
      * @return List of posts the user has participated in
      */
-    private int getPostsUserParticipatedInCount(String userDid) {
-        return dsl.selectCount()
+    private int getPostsUserParticipatedInCount(String userDid, boolean includeHidden) {
+        var q = dsl.selectCount()
             .from(POST)
             .whereExists(
                 dsl.selectOne()
@@ -361,16 +466,18 @@ public class AnswerPageController {
                     .where(REPLY.ROOT_POST_ATURI.eq(POST.ATURI))
                     .and(REPLY.OWNER_DID.eq(userDid))
             )
-            .and(POST.ATURI.notIn(
+            .and(POST.IS_OPEN.isTrue());
+        if (!includeHidden) {
+            q = q.and(POST.ATURI.notIn(
                 dsl.select(HIDDEN_POST.POST_ATURI)
                     .from(HIDDEN_POST)
-            ))
-            .and(POST.IS_OPEN.isTrue())
-            .fetchOne(0, int.class);
+            ));
+        }
+        return q.fetchOne(0, int.class);
     }
 
-    private List<Map<String, Object>> getPostsUserParticipatedInPaged(String userDid, int limit, int offset) {
-        var records = dsl.selectFrom(POST)
+    private List<Map<String, Object>> getPostsUserParticipatedInPaged(String userDid, int limit, int offset, boolean includeHidden) {
+        var recordsSelect = dsl.selectFrom(POST)
             .whereExists(
                 // Subquery: check if there's a reply from this user on this post
                 dsl.selectOne()
@@ -378,12 +485,15 @@ public class AnswerPageController {
                     .where(REPLY.ROOT_POST_ATURI.eq(POST.ATURI))  // Match reply to post
                     .and(REPLY.OWNER_DID.eq(userDid))              // Filter by user's DID
             )
-            .and(POST.ATURI.notIn(
+            .and(POST.IS_OPEN.isTrue());
+        if (!includeHidden) {
+            recordsSelect = recordsSelect.and(POST.ATURI.notIn(
                 //Exclude posts that are in the hidden table
                 dsl.select(HIDDEN_POST.POST_ATURI)
                     .from(HIDDEN_POST)
-            ))
-            .and(POST.IS_OPEN.isTrue())
+            ));
+        }
+        var records = recordsSelect
             .orderBy(POST.CREATED_AT.desc())
             .limit(limit)
             .offset(offset)
@@ -401,18 +511,25 @@ public class AnswerPageController {
                 map.put("createdAt", record.getCreatedAt() != null ? record.getCreatedAt().toString() : null);
                 map.put("updatedAt", record.getUpdatedAt() != null ? record.getUpdatedAt().toString() : null);
                 map.put("ownerDid", record.getOwnerDid());
-                Integer replyCount = dsl.selectCount()
+                var replyCountQ = dsl.selectCount()
                     .from(REPLY)
-                    .where(REPLY.ROOT_POST_ATURI.eq(record.getAturi()))
-                    .fetchOne(0, Integer.class);
+                        .where(REPLY.ROOT_POST_ATURI.eq(record.getAturi()));
+                if (!includeHidden) {
+                    replyCountQ = replyCountQ.andNotExists(
+                        dsl.selectOne()
+                           .from(HIDDEN_REPLY)
+                           .where(HIDDEN_REPLY.REPLY_ATURI.eq(REPLY.ATURI))
+                    );
+                }
+                Integer replyCount = replyCountQ.fetchOne(0, Integer.class);
                 map.put("countReplies", replyCount != null ? replyCount : 0);
                 return map;
             })
             .toList();
     }
 
-    private List<Map<String, Object>> getPostsUserParticipatedIn(String userDid) {
-        var records = dsl.selectFrom(POST)
+    private List<Map<String, Object>> getPostsUserParticipatedIn(String userDid, boolean includeHidden) {
+        var recordsSelect = dsl.selectFrom(POST)
             .whereExists(
                 // Subquery: check if there's a reply from this user on this post
                 dsl.selectOne()
@@ -420,12 +537,15 @@ public class AnswerPageController {
                     .where(REPLY.ROOT_POST_ATURI.eq(POST.ATURI))  // Match reply to post
                     .and(REPLY.OWNER_DID.eq(userDid))              // Filter by user's DID
             )
-            .and(POST.ATURI.notIn(
+            .and(POST.IS_OPEN.isTrue());
+        if (!includeHidden) {
+            recordsSelect = recordsSelect.and(POST.ATURI.notIn(
                 //Exclude posts that are in the hidden table
                 dsl.select(HIDDEN_POST.POST_ATURI)
                     .from(HIDDEN_POST)
-            ))
-            .and(POST.IS_OPEN.isTrue())
+            ));
+        }
+        var records = recordsSelect
             .orderBy(POST.CREATED_AT.desc())
             .fetch();
         
@@ -448,10 +568,17 @@ public class AnswerPageController {
                 map.put("ownerDid", record.getOwnerDid());
                 
                 // Add reply count
-                Integer replyCount = dsl.selectCount()
+                var replyCountQ = dsl.selectCount()
                     .from(REPLY)
-                    .where(REPLY.ROOT_POST_ATURI.eq(record.getAturi()))
-                    .fetchOne(0, Integer.class);
+                    .where(REPLY.ROOT_POST_ATURI.eq(record.getAturi()));
+                if (!includeHidden) {
+                    replyCountQ = replyCountQ.andNotExists(
+                        dsl.selectOne()
+                           .from(HIDDEN_REPLY)
+                           .where(HIDDEN_REPLY.REPLY_ATURI.eq(REPLY.ATURI))
+                    );
+                }
+                Integer replyCount = replyCountQ.fetchOne(0, Integer.class);
                 map.put("countReplies", replyCount != null ? replyCount : 0);
                 
                 return map;

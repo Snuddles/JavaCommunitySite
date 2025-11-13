@@ -46,6 +46,14 @@
          this.sessionService = sessionService;
      }
 
+    private boolean isCurrentUserAdmin() {
+        if (!sessionService.isAuthenticated()) return false;
+        var clientOpt = sessionService.getCurrentClient();
+        if (clientOpt.isEmpty()) return false;
+        String clientDid = clientOpt.get().getSession().getDid();
+        return UserInfo.isAdmin(dsl, clientDid);
+    }
+
      @GetMapping("/post/{userDid}/{postRKey}")
      public String getPost(
              Model model,
@@ -69,14 +77,24 @@
              return ""; // TODO redirect to 500
          }
 
-         // Get replies
+        // Get replies
          com.jcs.javacommunitysite.jooq.tables.records.ReplyRecord[] postReplies;
          try {
-             postReplies = dsl.selectFrom(REPLY)
-                     .where(REPLY.ROOT_POST_ATURI.eq(aturi.toString()))
-                     .orderBy(REPLY.CREATED_AT.asc())
-                     .limit(20)
-                     .fetchArray();
+        boolean includeHidden = isCurrentUserAdmin();
+        var repliesSelect = dsl.selectFrom(REPLY)
+            .where(REPLY.ROOT_POST_ATURI.eq(aturi.toString()));
+        if (!includeHidden) {
+            // Exclude replies that have a hidden record for non-admin viewers
+            repliesSelect = repliesSelect.andNotExists(
+                dsl.selectOne()
+                   .from(HIDDEN_REPLY)
+                   .where(HIDDEN_REPLY.REPLY_ATURI.eq(REPLY.ATURI))
+            );
+        }
+        postReplies = repliesSelect
+            .orderBy(REPLY.CREATED_AT.asc())
+            .limit(20)
+            .fetchArray();
          } catch (Exception e) {
              return ErrorUtil.createErrorToast(response, model, "Failed to get replies. Please try again later.");
          }
@@ -93,7 +111,8 @@
          model.addAttribute("post", post);
          model.addAttribute("newReplyForm", new NewReplyForm());
          model.addAttribute("postReplies", postReplies);
-         model.addAttribute("isPostHidden", ModUtil.isPostHidden(dsl, aturi));
+    model.addAttribute("isPostHidden", ModUtil.isPostHidden(dsl, aturi));
+    model.addAttribute("loggedInUser", UserInfo.getSelfFromDb(dsl, sessionService));
 
          return "pages/post/page";
      }
@@ -106,18 +125,34 @@
                               @RequestParam int page) {
          AtUri aturi = new AtUri(userDid, QuestionRecord.recordCollection, postRKey);
 
-         try {
-             var replies = dsl.selectFrom(REPLY)
-                     .where(REPLY.ROOT_POST_ATURI.eq(aturi.toString()))
-                     .orderBy(REPLY.CREATED_AT.asc())
-                     .limit(20)
-                     .offset((page - 1) * 20)
-                     .fetchArray();
+        try {
+        boolean includeHidden = isCurrentUserAdmin();
+        var repliesSelect = dsl.selectFrom(REPLY)
+            .where(REPLY.ROOT_POST_ATURI.eq(aturi.toString()));
+        if (!includeHidden) {
+            repliesSelect = repliesSelect.andNotExists(
+                dsl.selectOne()
+                   .from(HIDDEN_REPLY)
+                   .where(HIDDEN_REPLY.REPLY_ATURI.eq(REPLY.ATURI))
+            );
+        }
+        var replies = repliesSelect
+            .orderBy(REPLY.CREATED_AT.asc())
+            .limit(20)
+            .offset((page - 1) * 20)
+            .fetchArray();
 
-             var totalReplies = dsl.selectCount()
+             var totalRepliesQ = dsl.selectCount()
                      .from(REPLY)
-                     .where(REPLY.ROOT_POST_ATURI.eq(aturi.toString()))
-                     .fetchOne(0, int.class);
+                     .where(REPLY.ROOT_POST_ATURI.eq(aturi.toString()));
+             if (!includeHidden) {
+                 totalRepliesQ = totalRepliesQ.andNotExists(
+                     dsl.selectOne()
+                        .from(HIDDEN_REPLY)
+                        .where(HIDDEN_REPLY.REPLY_ATURI.eq(REPLY.ATURI))
+                 );
+             }
+             var totalReplies = totalRepliesQ.fetchOne(0, int.class);
 
              boolean hasMoreReplies = totalReplies > ((page + 1) * 20);
 
@@ -131,6 +166,7 @@
              model.addAttribute("users", usersMap);
              model.addAttribute("nextPage", page + 1);
              model.addAttribute("hasMoreReplies", hasMoreReplies);
+            model.addAttribute("loggedInUser", UserInfo.getSelfFromDb(dsl, sessionService));
 
              return "pages/post/htmx/replies";
          } catch (Exception e) {
@@ -481,9 +517,11 @@
              return "empty";
          }
          AtprotoClient client = clientOpt.get();
-
-         // TODO Check if they are an admin
-
+        // Require admin/superadmin
+        String clientDid = client.getSession().getDid();
+        if (!UserInfo.isAdmin(dsl, clientDid)) {
+            return ErrorUtil.createErrorToast(response, model, "You are not authorized to hide posts.");
+        }
          try {
              var hidePostRecord = new HidePostRecord(new AtUri(userDid, QuestionRecord.recordCollection, postRKey), (Instant) null);
              client.createRecord(hidePostRecord);
@@ -509,9 +547,11 @@
              return "empty";
          }
          AtprotoClient client = clientOpt.get();
-
-         // TODO Check if they are an admin
-
+        // Require admin/superadmin
+        String clientDid2 = client.getSession().getDid();
+        if (!UserInfo.isAdmin(dsl, clientDid2)) {
+            return ErrorUtil.createErrorToast(response, model, "You are not authorized to hide replies.");
+        }
          try {
              var hideReplyRecord = new HideReplyRecord(new AtUri(reply), (Instant) null);
              client.createRecord(hideReplyRecord);
@@ -537,9 +577,11 @@
              return "empty";
          }
          AtprotoClient client = clientOpt.get();
-
-         // TODO Check if they are an admin
-
+        // Require admin/superadmin
+        String clientDid3 = client.getSession().getDid();
+        if (!UserInfo.isAdmin(dsl, clientDid3)) {
+            return ErrorUtil.createErrorToast(response, model, "You are not authorized to unhide posts.");
+        }
          var postAtUri = new AtUri(userDid, QuestionRecord.recordCollection, postRKey);
          try {
              var hiddePostAturi = dsl.select(HIDDEN_POST.ATURI)
@@ -568,9 +610,11 @@
              return "empty";
          }
          AtprotoClient client = clientOpt.get();
-
-         // TODO Check if they are an admin
-
+        // Require admin/superadmin
+        String clientDid4 = client.getSession().getDid();
+        if (!UserInfo.isAdmin(dsl, clientDid4)) {
+            return ErrorUtil.createErrorToast(response, model, "You are not authorized to unhide replies.");
+        }
          try {
              var hiddenReplyAturi = dsl.select(HIDDEN_REPLY.ATURI)
                      .from(HIDDEN_REPLY)
