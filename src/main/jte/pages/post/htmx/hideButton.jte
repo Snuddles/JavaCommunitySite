@@ -4,6 +4,8 @@
 @param AtUri reply = null
 @param boolean isHidden
 
+!{var replyRkey = reply != null ? reply.getRecordKey() : null;}
+
 !{
     String baseUrl = "/post/" + post.getDid() + "/" + post.getRecordKey() + "/htmx/";
     String target = "";
@@ -23,7 +25,7 @@
         hx-post="${baseUrl}unhide${target}"
         hx-target="this"
         hx-swap="outerHTML"
-        hx-on::before-request="togglePopup('${id}')"
+        hx-on::before-request="togglePopup('${id}'); toggleHidden('${replyRkey}', ${reply == null})"
     >
         <img src="/visible.svg" alt="" />
         Unhide
@@ -34,7 +36,7 @@
         hx-post="${baseUrl}hide${target}"
         hx-target="this"
         hx-swap="outerHTML"
-        hx-on::before-request="togglePopup('${id}')"
+        hx-on::before-request="togglePopup('${id}'); toggleHidden('${replyRkey}', ${reply == null})"
     >
         <img src="/hidden.svg" alt="" />
         Hide

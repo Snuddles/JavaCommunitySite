@@ -21,7 +21,7 @@
 }
 !{String displayName = !user.displayName.isBlank() ? user.displayName : user.handle;}
 
-<div id="reply-${self == null ? "new" : self.getRecordKey()}">
+<div id="reply-${self == null ? "new" : self.getRecordKey()}" class="${isHidden ? "hidden" : ""}">
     <div class="mid-reply-runner"></div>
     <div class="post">
         <div class="content">
@@ -67,6 +67,13 @@
             <div class="body">
                 <p>
                     $unsafe{MarkdownUtil.render(reply.getContent().toString())}
+                </p>
+
+                <p
+                    id="reply-${self.getRecordKey()}-hide-text"
+                    style="display: ${isHidden ? "block" : "none"}; color: var(--subtext-color);"
+                >
+                    <i>This reply is hidden</i>
                 </p>
             </div>
         </div>

@@ -24,6 +24,7 @@
  import java.io.IOException;
  import java.time.Instant;
  import java.time.ZoneOffset;
+ import java.util.Arrays;
  import java.util.HashSet;
  import java.util.Set;
 
@@ -77,26 +78,36 @@
              return ""; // TODO redirect to 500
          }
 
-        // Get replies
+         // Get replies
          com.jcs.javacommunitysite.jooq.tables.records.ReplyRecord[] postReplies;
          try {
-        boolean includeHidden = isCurrentUserAdmin();
-        var repliesSelect = dsl.selectFrom(REPLY)
-            .where(REPLY.ROOT_POST_ATURI.eq(aturi.toString()));
-        if (!includeHidden) {
-            // Exclude replies that have a hidden record for non-admin viewers
-            repliesSelect = repliesSelect.andNotExists(
-                dsl.selectOne()
-                   .from(HIDDEN_REPLY)
-                   .where(HIDDEN_REPLY.REPLY_ATURI.eq(REPLY.ATURI))
-            );
-        }
-        postReplies = repliesSelect
-            .orderBy(REPLY.CREATED_AT.asc())
-            .limit(20)
-            .fetchArray();
+            boolean includeHidden = isCurrentUserAdmin();
+            var repliesSelect = dsl.selectFrom(REPLY)
+                .where(REPLY.ROOT_POST_ATURI.eq(aturi.toString()));
+            if (!includeHidden) {
+                // Exclude replies that have a hidden record for non-admin viewers
+                repliesSelect = repliesSelect.andNotExists(
+                    dsl.selectOne()
+                       .from(HIDDEN_REPLY)
+                       .where(HIDDEN_REPLY.REPLY_ATURI.eq(REPLY.ATURI))
+                );
+            }
+            postReplies = repliesSelect
+                .orderBy(REPLY.CREATED_AT.asc())
+                .limit(20)
+                .fetchArray();
          } catch (Exception e) {
              return ErrorUtil.createErrorToast(response, model, "Failed to get replies. Please try again later.");
+         }
+
+         // Get list of hidden replies
+         if (isCurrentUserAdmin()) {
+             var hiddenReplies = dsl.select(HIDDEN_REPLY.REPLY_ATURI)
+                     .from(HIDDEN_REPLY)
+                     .where(HIDDEN_REPLY.REPLY_ATURI.in(Arrays.stream(postReplies).map(x -> x.getAturi()).toList()))
+                     .fetchArray(HIDDEN_REPLY.REPLY_ATURI);
+
+             model.addAttribute("hiddenReplies", hiddenReplies);
          }
 
          // Get all users associated with this post
@@ -111,8 +122,8 @@
          model.addAttribute("post", post);
          model.addAttribute("newReplyForm", new NewReplyForm());
          model.addAttribute("postReplies", postReplies);
-    model.addAttribute("isPostHidden", ModUtil.isPostHidden(dsl, aturi));
-    model.addAttribute("loggedInUser", UserInfo.getSelfFromDb(dsl, sessionService));
+         model.addAttribute("isPostHidden", ModUtil.isPostHidden(dsl, aturi));
+         model.addAttribute("loggedInUser", UserInfo.getSelfFromDb(dsl, sessionService));
 
          return "pages/post/page";
      }
@@ -126,49 +137,60 @@
          AtUri aturi = new AtUri(userDid, QuestionRecord.recordCollection, postRKey);
 
         try {
-        boolean includeHidden = isCurrentUserAdmin();
-        var repliesSelect = dsl.selectFrom(REPLY)
-            .where(REPLY.ROOT_POST_ATURI.eq(aturi.toString()));
-        if (!includeHidden) {
-            repliesSelect = repliesSelect.andNotExists(
-                dsl.selectOne()
-                   .from(HIDDEN_REPLY)
-                   .where(HIDDEN_REPLY.REPLY_ATURI.eq(REPLY.ATURI))
-            );
-        }
-        var replies = repliesSelect
-            .orderBy(REPLY.CREATED_AT.asc())
-            .limit(20)
-            .offset((page - 1) * 20)
-            .fetchArray();
+            boolean includeHidden = isCurrentUserAdmin();
+            var repliesSelect = dsl.selectFrom(REPLY)
+                .where(REPLY.ROOT_POST_ATURI.eq(aturi.toString()));
+            if (!includeHidden) {
+                repliesSelect = repliesSelect.andNotExists(
+                    dsl.selectOne()
+                       .from(HIDDEN_REPLY)
+                       .where(HIDDEN_REPLY.REPLY_ATURI.eq(REPLY.ATURI))
+                );
+            }
+            var replies = repliesSelect
+                .orderBy(REPLY.CREATED_AT.asc())
+                .limit(20)
+                .offset((page - 1) * 20)
+                .fetchArray();
 
-             var totalRepliesQ = dsl.selectCount()
+            var totalRepliesQ = dsl.selectCount()
                      .from(REPLY)
                      .where(REPLY.ROOT_POST_ATURI.eq(aturi.toString()));
-             if (!includeHidden) {
+            if (!includeHidden) {
                  totalRepliesQ = totalRepliesQ.andNotExists(
                      dsl.selectOne()
                         .from(HIDDEN_REPLY)
                         .where(HIDDEN_REPLY.REPLY_ATURI.eq(REPLY.ATURI))
                  );
-             }
-             var totalReplies = totalRepliesQ.fetchOne(0, int.class);
+            }
 
-             boolean hasMoreReplies = totalReplies > ((page + 1) * 20);
+            // Get list of hidden replies
+            if (isCurrentUserAdmin()) {
+                var hiddenReplies = dsl.select(HIDDEN_REPLY.REPLY_ATURI)
+                        .from(HIDDEN_REPLY)
+                        .where(HIDDEN_REPLY.REPLY_ATURI.in(Arrays.stream(replies).map(x -> x.getAturi()).toList()))
+                        .fetchArray(HIDDEN_REPLY.REPLY_ATURI);
 
-             Set<String> userDids = new HashSet<>();
-             for (var reply : replies) {
+                model.addAttribute("hiddenReplies", hiddenReplies);
+            }
+
+            var totalReplies = totalRepliesQ.fetchOne(0, int.class);
+
+            boolean hasMoreReplies = totalReplies > ((page + 1) * 20);
+
+            Set<String> userDids = new HashSet<>();
+            for (var reply : replies) {
                  userDids.add(reply.getOwnerDid());
-             }
-             var usersMap = UserInfo.getFromDb(dsl, sessionService, userDids);
+            }
+            var usersMap = UserInfo.getFromDb(dsl, sessionService, userDids);
 
-             model.addAttribute("replies", replies);
-             model.addAttribute("users", usersMap);
-             model.addAttribute("nextPage", page + 1);
-             model.addAttribute("hasMoreReplies", hasMoreReplies);
+            model.addAttribute("replies", replies);
+            model.addAttribute("users", usersMap);
+            model.addAttribute("nextPage", page + 1);
+            model.addAttribute("hasMoreReplies", hasMoreReplies);
             model.addAttribute("loggedInUser", UserInfo.getSelfFromDb(dsl, sessionService));
 
-             return "pages/post/htmx/replies";
+            return "pages/post/htmx/replies";
          } catch (Exception e) {
              return ErrorUtil.createErrorToast(response, model, "Failed to load more replies. Please try again later.");
          }
@@ -378,7 +400,7 @@
          model.addAttribute("reply", newReply);
          model.addAttribute("user", UserInfo.getFromDb(dsl, sessionService, updatedReply.getAtUri().getDid()));
          model.addAttribute("loggedInUser", UserInfo.getSelfFromDb(dsl, sessionService));
-         model.addAttribute("isHidden", ModUtil.isReplyHidden(dsl, currentReply.getAtUri())); // TODO
+         model.addAttribute("isHidden", ModUtil.isReplyHidden(dsl, currentReply.getAtUri()));
 
          return "pages/post/components/reply";
      }
@@ -397,7 +419,7 @@
 
              model.addAttribute("reply", replyRecord);
              model.addAttribute("user", UserInfo.getFromDb(dsl, sessionService, new AtUri(reply).getDid()));
-             model.addAttribute("isHidden", ModUtil.isReplyHidden(dsl, new AtUri(reply))); // TODO
+             model.addAttribute("isHidden", ModUtil.isReplyHidden(dsl, new AtUri(reply)));
              model.addAttribute("loggedInUser", UserInfo.getSelfFromDb(dsl, sessionService));
              return "pages/post/components/reply";
          } catch (Exception e) {

@@ -1486,3 +1486,10 @@ code[class*="language-"] {
     font-size: var(--xsmall-text);
     transform: translate(-85%, -85%);
 }
+
+.hidden {
+
+    & .poster-info, .body {
+        opacity: 40%;
+    }
+}

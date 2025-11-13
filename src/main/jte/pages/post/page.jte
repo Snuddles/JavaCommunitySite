@@ -3,6 +3,7 @@
 @import com.jcs.javacommunitysite.jooq.tables.records.PostRecord
 @import com.jcs.javacommunitysite.jooq.tables.records.ReplyRecord
 @import com.jcs.javacommunitysite.util.UserInfo
+@import java.util.Arrays
 @import java.util.Map
 
 @param PostRecord post
@@ -10,6 +11,7 @@
 @param ReplyRecord[] postReplies
 @param NewReplyForm newReplyForm
 @param boolean isPostHidden
+@param String[] hiddenReplies = new String[0]
 
 
 !{AtUri aturi = new AtUri(post.getAturi());}
@@ -32,13 +34,16 @@ content = @`
         )
 
         !{int i = 1;}
+        !{var hiddenRepliesList = Arrays.asList(hiddenReplies);}
         @for(var reply : postReplies)
+            !{var isHidden = hiddenRepliesList.contains(reply.getAturi());}
             @template.pages.post.components.reply(
                 reply=reply,
                 user=users.get(reply.getOwnerDid()),
                 paginationTrigger = (i == postReplies.length),
                 nextPage = 2,
-                loggedInUser = users.get("self")
+                loggedInUser = users.get("self"),
+                isHidden = isHidden
             )
             !{i++;}
         @endfor

@@ -122,5 +122,22 @@
     function isError(xhr) {
         return xhr.status >= 400 && xhr.status < 600;
     }
+
+    function toggleHidden(target, isPost) {
+        let targetElement = null
+        if (isPost) {
+            targetElement = document.getElementById("post");
+        } else {
+            targetElement = document.getElementById("reply-" + target);
+        }
+        if (!targetElement) return
+
+        const added = targetElement.classList.toggle("hidden");
+
+        if (!isPost) {
+            const hideText = document.getElementById("reply-" + target + "-hide-text")
+            hideText.style.display = added ? "block" : "none"
+        }
+    }
 </script>
 </html>
