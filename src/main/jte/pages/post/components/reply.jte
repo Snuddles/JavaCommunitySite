@@ -14,14 +14,12 @@
 
 !{AtUri root = new AtUri(reply.getRootPostAturi());}
 !{
-    AtUri self = null;
-    if (reply.getAturi() != null) {
-        self = new AtUri(reply.getAturi());
-    }
+    AtUri self = new AtUri(reply.getAturi());
 }
+
 !{String displayName = !user.displayName.isBlank() ? user.displayName : user.handle;}
 
-<div id="reply-${self == null ? "new" : self.getRecordKey()}" class="${isHidden ? "hidden" : ""}">
+<div id="reply-${self.getRecordKey()}" class="${isHidden ? "hidden" : ""}">
     <div class="mid-reply-runner"></div>
     <div class="post">
         <div class="content">
@@ -44,25 +42,23 @@
                 <div class="time-info">
                     ${TimeUtil.calculateTimeText(reply.getCreatedAt())}
                 </div>
-                @if(self != null)
-                    <div id="reply-popup-button-container-${self.getRecordKey()}" class="popup-menu-container">
-                        <button
-                            id="reply-popup-${self.getRecordKey()}-button"
-                            class="button icon"
-                            onclick="togglePopup('reply-popup-${self.getRecordKey()}')"
-                        >
-                            <img src="/more.svg" alt="More Options" width="20" />
-                        </button>
-                        @template.pages.post.htmx.replyPopupMenu(
-                            id = "reply-popup-" + self.getRecordKey(),
-                            post = root,
-                            reply = self,
-                            ownsThisReply = user.isSelf,
-                            isCurUserAdmin = loggedInUser != null ? loggedInUser.isAdmin : false,
-                            isHidden = isHidden
-                        )
-                    </div>
-                @endif
+                <div id="reply-popup-button-container-${self.getRecordKey()}" class="popup-menu-container">
+                    <button
+                        id="reply-popup-${self.getRecordKey()}-button"
+                        class="button icon"
+                        onclick="togglePopup('reply-popup-${self.getRecordKey()}')"
+                    >
+                        <img src="/more.svg" alt="More Options" width="20" />
+                    </button>
+                    @template.pages.post.htmx.replyPopupMenu(
+                        id = "reply-popup-" + self.getRecordKey(),
+                        post = root,
+                        reply = self,
+                        ownsThisReply = user.isSelf,
+                        isCurUserAdmin = loggedInUser != null ? loggedInUser.isAdmin : false,
+                        isHidden = isHidden
+                    )
+                </div>
             </div>
             <div class="body">
                 <p>

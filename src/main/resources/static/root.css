@@ -1488,8 +1488,37 @@ code[class*="language-"] {
 }
 
 .hidden {
-
     & .poster-info, .body {
         opacity: 40%;
+    }
+}
+
+.home-page {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+    gap: 20px;
+
+    & .section {
+        display: flex;
+        gap: 20px;
+        border: solid 1px var(--border-color);
+        border-radius: var(--border-radius-1);
+        padding: 20px;
+        align-items: center;
+
+        & img {
+            background-color: var(--accent);
+            padding: 10px;
+            border-radius: 1000px;
+        }
+
+        & .section-content {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
     }
 }

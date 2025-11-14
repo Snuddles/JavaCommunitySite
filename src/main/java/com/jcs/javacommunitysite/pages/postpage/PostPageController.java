@@ -34,6 +34,9 @@
  import static com.jcs.javacommunitysite.jooq.tables.HiddenReply.HIDDEN_REPLY;
  import static com.jcs.javacommunitysite.jooq.tables.Tags.TAGS;
  import static com.jcs.javacommunitysite.jooq.tables.Notification.NOTIFICATION;
+ import static dev.mccue.json.JsonDecoder.field;
+ import static dev.mccue.json.JsonDecoder.string;
+
  import com.jcs.javacommunitysite.jooq.enums.NotificationType;
 
  @Controller
@@ -215,9 +218,10 @@
          AtUri rootAturi = new AtUri(userDid, QuestionRecord.recordCollection, postRKey);
 
          ReplyRecord reply;
+         Json resp = null;
          try {
              reply = new ReplyRecord(newReplyForm.getContent(), rootAturi);
-             client.createRecord(reply);
+             resp = client.createRecord(reply);
          } catch (Exception e) {
              System.out.println(e);
              return ErrorUtil.createErrorToast(response, model, "An error occurred while trying to reply to the question. Please try again later.");
@@ -228,6 +232,7 @@
          fakeReply.setRootPostAturi(rootAturi.toString());
          fakeReply.setContent(reply.getContent());
          fakeReply.setCreatedAt(reply.getCreatedAt().atOffset(ZoneOffset.UTC));
+         fakeReply.setAturi(field(resp, "uri", string()));
 
          model.addAttribute("user", UserInfo.getFromDb(dsl, sessionService, client.getSession().getDid()));
          model.addAttribute("reply", fakeReply);
