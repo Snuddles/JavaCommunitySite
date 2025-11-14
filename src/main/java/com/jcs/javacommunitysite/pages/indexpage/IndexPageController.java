@@ -2,6 +2,7 @@ package com.jcs.javacommunitysite.pages.indexpage;
 
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import com.jcs.javacommunitysite.atproto.service.AtprotoSessionService;
 
@@ -17,7 +18,11 @@ public class IndexPageController {
     }
 
     @GetMapping("/")
-    public String index() {
+    public String index(Model model) {
+        if (sessionService.isAuthenticated()) {
+            model.addAttribute("loggedIn", true);
+        }
+
         return "index";
     }
     

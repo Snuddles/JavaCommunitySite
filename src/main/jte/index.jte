@@ -1,21 +1,24 @@
+@param boolean loggedIn = false
+
 @template.layout.main(
     title = "Welcome",
     content = @`
-    <%-- TODO this needs to be made better --%>
     <div class="home-page">
         <h2>Welcome to the Java Community Site</h2>
 
-        <div class="section">
-            <img src="/homepage/login.svg" alt="" />
-            <div class="section-content">
-                <h5>Log in using AtProtocol</h5>
-                <p>
-                    Java Community Site uses the AtProtocol, a decentralized protocol where you are in control of your data.
-                    You can <a href="/login">log in</a> using existing AtProtocol account (such as your Bluesky account),
-                    or <a href="https://bsky.app/">make a new one</a> with Bluesky.
-                </p>
+        @if(!loggedIn)
+            <div class="section">
+                <img src="/homepage/login.svg" alt="" />
+                <div class="section-content">
+                    <h5>Log in using AtProtocol</h5>
+                    <p>
+                        Java Community Site uses the AtProtocol, a decentralized protocol where you are in control of your data.
+                        You can <a href="/login">log in</a> using existing AtProtocol account (such as your Bluesky account),
+                        or <a href="https://bsky.app/">make a new one</a> with Bluesky.
+                    </p>
+                </div>
             </div>
-        </div>
+        @endif
 
 
         <div class="section">
