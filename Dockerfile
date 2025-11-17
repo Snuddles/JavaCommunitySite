@@ -6,7 +6,7 @@ COPY src ./src
 COPY target/generated-sources ./target/generated-sources
 
 # Package application (skip jOOQ generation - using pre-generated sources)
-RUN mvn package -DskipTests -Djooq.codegen.skip=true -Djte.skip=true
+RUN mvn package -DskipTests -Djooq.codegen.skip=true -Pprod
 
 # ---- Runtime Stage ----
 FROM eclipse-temurin:21-jre-alpine
