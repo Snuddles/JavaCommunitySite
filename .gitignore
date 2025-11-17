@@ -20,7 +20,6 @@ mvnw.cmd
 # === Environment Variables ===
 .env
 *.env
-application.properties
 
 # === IDEs ===
 
