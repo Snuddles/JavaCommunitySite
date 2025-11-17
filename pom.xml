@@ -149,6 +149,27 @@
             </plugin>
 
             <plugin>
+                <groupId>gg.jte</groupId>
+                <artifactId>jte-maven-plugin</artifactId>
+                <version>${jte.version}</version>
+                <executions>
+                    <execution>
+                        <id>generate-templates</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <sourceDirectory>${project.basedir}/src/main/jte</sourceDirectory>
+                    <outputDirectory>${project.build.directory}/generated-sources/jte</outputDirectory>
+                    <packageName>gg.jte.generated</packageName>
+                    <generateBytecode>true</generateBytecode>
+                </configuration>
+            </plugin>
+
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
                 <version>3.4.0</version>
@@ -161,6 +182,7 @@
                         <configuration>
                             <sources>
                                 <source>target/generated-sources/jooq</source>
+                                <source>target/generated-sources/jte</source>
                             </sources>
                         </configuration>
                     </execution>
