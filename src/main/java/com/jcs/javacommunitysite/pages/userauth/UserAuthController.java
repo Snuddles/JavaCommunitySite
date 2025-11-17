@@ -19,7 +19,7 @@ import static dev.mccue.json.JsonDecoder.field;
 import static dev.mccue.json.JsonDecoder.optionalNullableField;
 import static dev.mccue.json.JsonDecoder.string;
 
-@Controller
+@RestController
 public class UserAuthController {
 
     private final AtprotoSessionService sessionService;
