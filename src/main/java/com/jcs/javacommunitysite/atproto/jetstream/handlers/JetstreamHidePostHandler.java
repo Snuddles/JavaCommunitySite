@@ -23,11 +23,6 @@ public class JetstreamHidePostHandler implements JetstreamHandler {
     public void handleCreated(AtUri atUri, Json recordJson) {
         HidePostRecord record = new HidePostRecord(atUri, recordJson);
 
-        if(dsl.fetchExists(HIDDEN_POST, HIDDEN_POST.ATURI.eq(atUri.toString()))) {
-            System.out.println("Hidden Post record exists in database, skipping insert.");
-            return;
-        }
-
         String recordOwnerDid = record.getOwnerDid().orElseThrow();
 
         if(!(recordOwnerDid.equals(JCS_FORUM_DID) || dsl.fetchExists(USER_ROLE, USER_ROLE.USER_DID.eq(recordOwnerDid).and(USER_ROLE.ROLE_ID.eq(2))))) {
@@ -39,14 +34,20 @@ public class JetstreamHidePostHandler implements JetstreamHandler {
         String targetOwnerDid = questionRecord.getOwnerDid().orElseThrow();
 
         try {
-            dsl.insertInto(HIDDEN_POST)
+            int inserted = dsl.insertInto(HIDDEN_POST)
                 .set(HIDDEN_POST.ATURI, record.getAtUri().toString())
                 .set(HIDDEN_POST.POST_ATURI, record.getTarget().toString())
                 .set(HIDDEN_POST.TARGET_OWNER_DID, targetOwnerDid)
                 .set(HIDDEN_POST.HIDDEN_BY, recordOwnerDid)
                 .set(HIDDEN_POST.CREATED_AT, record.getCreatedAt().atOffset(ZoneOffset.UTC))
                 .set(HIDDEN_POST.REASON, record.getReason())
+                .onConflictDoNothing()
                 .execute();
+
+            if(inserted == 0){
+                System.out.println("Hidden Post record exists in database, skipping insert.");
+                return;
+            }
 
             System.out.println("HidePost record created:");
             System.out.println(" - AtUri: " + record.getAtUri());

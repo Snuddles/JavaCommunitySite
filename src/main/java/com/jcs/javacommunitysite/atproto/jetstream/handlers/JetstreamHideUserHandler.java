@@ -21,11 +21,6 @@ public class JetstreamHideUserHandler implements JetstreamHandler {
     public void handleCreated(AtUri atUri, Json recordJson) {
         HideUserRecord record = new HideUserRecord(atUri, recordJson);
 
-        if(dsl.fetchExists(HIDDEN_USER, HIDDEN_USER.ATURI.eq(atUri.toString()))) {
-            System.out.println("Hidden User record already exists in database, skipping insert.");
-            return;
-        }
-
         String recordOwnerDid = record.getOwnerDid().orElseThrow();
 
         if(!(recordOwnerDid.equals(JCS_FORUM_DID) || dsl.fetchExists(USER_ROLE, USER_ROLE.USER_DID.eq(recordOwnerDid).and(USER_ROLE.ROLE_ID.eq(2))))) {
@@ -34,13 +29,19 @@ public class JetstreamHideUserHandler implements JetstreamHandler {
         }
 
         try {
-            dsl.insertInto(HIDDEN_USER)
+            int inserted = dsl.insertInto(HIDDEN_USER)
                 .set(HIDDEN_USER.ATURI, record.getAtUri().toString())
                 .set(HIDDEN_USER.TARGET_DID, record.getTarget())
                 .set(HIDDEN_USER.HIDDEN_BY, recordOwnerDid)
                 .set(HIDDEN_USER.CREATED_AT, record.getCreatedAt().atOffset(java.time.ZoneOffset.UTC))
                 .set(HIDDEN_USER.REASON, record.getReason())
+                .onConflictDoNothing()
                 .execute();
+
+            if(inserted == 0){
+                System.out.println("Hidden User record already exists in database, skipping insert.");
+                return;
+            }
 
             System.out.println("HideUser record created:");
             System.out.println(" - AtUri: " + record.getAtUri());

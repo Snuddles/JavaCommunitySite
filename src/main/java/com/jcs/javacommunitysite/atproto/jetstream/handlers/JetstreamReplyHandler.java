@@ -31,24 +31,25 @@ public class JetstreamReplyHandler implements JetstreamHandler {
          System.out.println(" - Created At: " + record.getCreatedAt().toString());
          System.out.println(" - Post root: " + record.getRoot().toString());
 
-         if(dsl.fetchExists(REPLY, REPLY.ATURI.eq(record.getAtUri().toString()))){
-             System.out.println("Reply record already exists in database, skipping insert.");
-             return;
-         }
-
          try{
              Json replyJson = record.toJson();
              AtUri rootAtUri = field(replyJson, "root", AtUri::fromJson);
 
              // Insert reply into DB
-             dsl.insertInto(REPLY)
+             int inserted = dsl.insertInto(REPLY)
                  .set(REPLY.CONTENT, field(replyJson, "content", string()))
                  .set(REPLY.CREATED_AT, record.getCreatedAt().atOffset(ZoneOffset.UTC))
                  .set(REPLY.UPDATED_AT, record.getUpdatedAt().atOffset(ZoneOffset.UTC))
                  .set(REPLY.ROOT_POST_ATURI, rootAtUri.toString())
                  .set(REPLY.ATURI, atUri.toString())
                  .set(REPLY.OWNER_DID, atUri.getDid())
+                 .onConflictDoNothing()
                  .execute();
+
+             if(inserted == 0){
+                 System.out.println("Reply record already exists in database, skipping insert.");
+                 return;
+             }
 
              // Create notification if applicable
              String postOwnerDid = rootAtUri.getDid();
@@ -60,6 +61,7 @@ public class JetstreamReplyHandler implements JetstreamHandler {
                          .set(NOTIFICATION.POST_ATURI, rootAtUri.toString())
                          .set(NOTIFICATION.REPLY_ATURI, atUri.toString())
                          .set(NOTIFICATION.TYPE, NotificationType.NEW_COMMENT)
+                         .onConflictDoNothing()
                          .execute();
              }
          } catch(Exception e){

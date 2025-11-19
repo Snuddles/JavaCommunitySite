@@ -21,11 +21,6 @@ public class JetstreamTagHandler implements JetstreamHandler {
     public void handleCreated(AtUri atUri, Json recordJson) {
         TagRecord record = new TagRecord(atUri, recordJson);
 
-        if(dsl.fetchExists(TAGS, TAGS.ATURI.eq(atUri.toString()))) {
-            System.out.println("Tag record already exists in database, skipping insert.");
-            return;
-        }
-
         String recordOwnerDid = record.getOwnerDid().orElseThrow();
 
         if(!(recordOwnerDid.equals(JCS_FORUM_DID) || dsl.fetchExists(USER_ROLE, USER_ROLE.USER_DID.eq(recordOwnerDid).and(USER_ROLE.ROLE_ID.eq(2))))) {
@@ -34,12 +29,18 @@ public class JetstreamTagHandler implements JetstreamHandler {
         }
 
         try {
-            dsl.insertInto(TAGS)
+            int inserted = dsl.insertInto(TAGS)
                 .set(TAGS.ATURI, record.getAtUri().toString())
                 .set(TAGS.TAG_NAME, record.getName())
                 .set(TAGS.CREATED_BY, recordOwnerDid)
                 .set(TAGS.CREATED_AT, record.getCreatedAt().atOffset(java.time.ZoneOffset.UTC))
+                .onConflictDoNothing()
                 .execute();
+
+            if(inserted == 0){
+                System.out.println("Tag record already exists in database, skipping insert.");
+                return;
+            }
 
             System.out.println("Tag record created:");
             System.out.println(" - AtUri: " + record.getAtUri());

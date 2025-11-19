@@ -32,13 +32,8 @@ public class JetstreamQuestionHandler implements JetstreamHandler {
          System.out.println(" - Created At: " + record.getCreatedAt());
          System.out.println(" - Updated At: " + record.getUpdatedAt());
 
-         if(dsl.fetchExists(POST, POST.ATURI.eq(record.getAtUri().toString()))){
-             System.out.println("Post record already exists in database, skipping insert.");
-             return;
-         }
-
          try{
-             dsl.insertInto(POST)
+             int inserted = dsl.insertInto(POST)
              .set(POST.TITLE, record.getTitle())
              .set(POST.CONTENT, record.getContent())
              .set(POST.CREATED_AT, record.getCreatedAt().atOffset(ZoneOffset.UTC))
@@ -48,7 +43,12 @@ public class JetstreamQuestionHandler implements JetstreamHandler {
              .set(POST.IS_OPEN, record.isOpen())
              .set(POST.IS_DELETED, false)
              .set(POST.OWNER_DID, record.getAtUri().getDid())
+             .onConflictDoNothing()
              .execute();
+             
+             if(inserted == 0){
+                 System.out.println("Post record already exists in database, skipping insert.");
+             }
          } catch(Exception e){
              System.out.println("Error inserting post record: " + e.getMessage());
              e.printStackTrace();
