@@ -344,7 +344,8 @@ public class AnswerPageController {
     private int getAllPostsCount(boolean includeHidden) {
         var q = dsl.selectCount()
             .from(POST)
-            .where(POST.IS_OPEN.isTrue());
+            .where(POST.IS_OPEN.isTrue())
+            .and(POST.IS_DELETED.eq(false));
         if (!includeHidden) {
             q = q.andNotExists(
                 dsl.selectOne()
@@ -357,7 +358,8 @@ public class AnswerPageController {
 
     private List<Map<String, Object>> getAllPostsPaged(int limit, int offset, boolean includeHidden) {
         var recordsSelect = dsl.selectFrom(POST)
-            .where(POST.IS_OPEN.isTrue());
+            .where(POST.IS_OPEN.isTrue())
+            .and(POST.IS_DELETED.eq(false));
         if (!includeHidden) {
             recordsSelect = recordsSelect.andNotExists(
                 dsl.selectOne()
@@ -423,7 +425,8 @@ public class AnswerPageController {
 
     private List<Map<String, Object>> getAllPosts(boolean includeHidden) {
         var recordsSelect = dsl.selectFrom(POST)
-            .where(POST.IS_OPEN.isTrue());
+            .where(POST.IS_OPEN.isTrue())
+            .and(POST.IS_DELETED.eq(false));
         if (!includeHidden) {
             recordsSelect = recordsSelect.andNotExists(
                 //Exclude posts that are in the hidden table
@@ -501,7 +504,8 @@ public class AnswerPageController {
                     .where(REPLY.ROOT_POST_ATURI.eq(POST.ATURI))
                     .and(REPLY.OWNER_DID.eq(userDid))
             )
-            .and(POST.IS_OPEN.isTrue());
+            .and(POST.IS_OPEN.isTrue())
+            .and(POST.IS_DELETED.eq(false));
         if (!includeHidden) {
             q = q.and(POST.ATURI.notIn(
                 dsl.select(HIDDEN_POST.POST_ATURI)
@@ -520,7 +524,8 @@ public class AnswerPageController {
                     .where(REPLY.ROOT_POST_ATURI.eq(POST.ATURI))  // Match reply to post
                     .and(REPLY.OWNER_DID.eq(userDid))              // Filter by user's DID
             )
-            .and(POST.IS_OPEN.isTrue());
+            .and(POST.IS_OPEN.isTrue())
+            .and(POST.IS_DELETED.eq(false));
         if (!includeHidden) {
             recordsSelect = recordsSelect.and(POST.ATURI.notIn(
                 //Exclude posts that are in the hidden table
@@ -588,7 +593,8 @@ public class AnswerPageController {
                     .where(REPLY.ROOT_POST_ATURI.eq(POST.ATURI))  // Match reply to post
                     .and(REPLY.OWNER_DID.eq(userDid))              // Filter by user's DID
             )
-            .and(POST.IS_OPEN.isTrue());
+            .and(POST.IS_OPEN.isTrue())
+            .and(POST.IS_DELETED.eq(false));
         if (!includeHidden) {
             recordsSelect = recordsSelect.and(POST.ATURI.notIn(
                 //Exclude posts that are in the hidden table
